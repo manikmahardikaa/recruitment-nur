@@ -61,6 +61,20 @@ const splitTextArea = (value?: string | string[]) => {
     .filter(Boolean);
 };
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (axios.isAxiosError(error)) {
+    const responseMessage =
+      typeof error.response?.data?.message === "string"
+        ? error.response.data.message
+        : undefined;
+    return responseMessage || error.message || fallback;
+  }
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return fallback;
+};
+
 const { Title, Paragraph, Text } = Typography;
 
 const DRAFT_STORAGE_KEY = "oss-job-create-draft-id";
@@ -99,7 +113,7 @@ const STEP_FIELD_NAMES: (string | (string | number)[])[][] = [
 export default function CreateJobUI({ jobId }: { jobId?: string }) {
   const [form] = Form.useForm();
   const router = useRouter();
-  const user_id = useAuth().user_id;
+  const { user_id, loading: authLoading } = useAuth();
   const { data: locationsData } = useLocationByUserId({ id: user_id || "" });
 
   const isEditMode = Boolean(jobId);
@@ -170,6 +184,7 @@ export default function CreateJobUI({ jobId }: { jobId?: string }) {
   const allFormValues = Form.useWatch([], form);
   const hasRestoredDraftRef = useRef(false);
   const lastDraftIdRef = useRef<string | null>(null);
+  const createDraftRequestRef = useRef<Promise<any> | null>(null);
 
   const persistDraftId = useCallback(
     (value: string | null) => {
@@ -317,8 +332,20 @@ export default function CreateJobUI({ jobId }: { jobId?: string }) {
   };
 
   const autoSaveDraft = useCallback(
-    async (overrideValues?: Record<string, unknown>) => {
-      if (!user_id && !isEditMode) return;
+    async (
+      overrideValues?: Record<string, unknown>,
+      options?: { requireUser?: boolean }
+    ) => {
+      if (!user_id && !isEditMode) {
+        if (options?.requireUser) {
+          throw new Error(
+            authLoading
+              ? "Sesi login masih dimuat. Tunggu sebentar lalu coba lagi."
+              : "Sesi login tidak ditemukan. Silakan login ulang."
+          );
+        }
+        return;
+      }
       if (isEditMode && !draftId) return;
       if (isEditMode && !draftJob) return;
 
@@ -417,7 +444,13 @@ export default function CreateJobUI({ jobId }: { jobId?: string }) {
             payload,
           });
         } else {
-          res = await createJob(payload);
+          if (!createDraftRequestRef.current) {
+            createDraftRequestRef.current = createJob(payload).finally(() => {
+              createDraftRequestRef.current = null;
+            });
+          }
+
+          res = await createDraftRequestRef.current;
           const createdId = res?.data?.result?.id ?? res?.data?.id;
           if (createdId) {
             persistDraftId(createdId);
@@ -440,6 +473,7 @@ export default function CreateJobUI({ jobId }: { jobId?: string }) {
       currentStep,
       draftId,
       user_id,
+      authLoading,
       form,
       persistDraftId,
       isEditMode,
@@ -524,8 +558,17 @@ export default function CreateJobUI({ jobId }: { jobId?: string }) {
   const handleFinish = useCallback(
     async (values: any) => {
       try {
+        if (!isEditMode && !user_id) {
+          message.error(
+            authLoading
+              ? "Sesi login masih dimuat. Tunggu sebentar lalu submit lagi."
+              : "Sesi login tidak ditemukan. Silakan login ulang."
+          );
+          return;
+        }
+
         setIsSubmitting(true);
-        const response = await autoSaveDraft(values);
+        const response = await autoSaveDraft(values, { requireUser: true });
         const jobId =
           draftId ??
           response?.data?.result?.id ??
@@ -552,14 +595,22 @@ export default function CreateJobUI({ jobId }: { jobId?: string }) {
         const defaultMessage = isEditMode
           ? "Gagal memperbarui job."
           : "Gagal mempublikasikan job.";
-        message.error(
-          error instanceof Error ? error.message : defaultMessage
-        );
+        message.error(getErrorMessage(error, defaultMessage));
       } finally {
         setIsSubmitting(false);
       }
     },
-    [autoSaveDraft, draftId, publishJob, router, persistDraftId, form, isEditMode]
+    [
+      autoSaveDraft,
+      authLoading,
+      draftId,
+      publishJob,
+      router,
+      persistDraftId,
+      form,
+      isEditMode,
+      user_id,
+    ]
   );
 
   const handleGenerateJobDescription = useCallback(async () => {

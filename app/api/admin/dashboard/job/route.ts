@@ -324,7 +324,19 @@ export const GET = async (req: NextRequest) => {
 export const POST = async (req: NextRequest) => {
   try {
     const body = await req.json();
-    const payload = parseCreatePayload(body);
+    let payload: JobPayloadCreateModel;
+    try {
+      payload = parseCreatePayload(body);
+    } catch (error) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            error instanceof Error ? error.message : "Invalid create payload",
+        },
+        { status: 400 }
+      );
+    }
 
     const data = await CREATE_JOB(payload);
 

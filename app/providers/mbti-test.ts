@@ -36,8 +36,23 @@ export async function CREATE_MBTI_TEST(payload: PayloadMbtiTest) {
   }
   assertNonEmptyString(payload.user_id, "user_id");
   assertNonEmptyString(payload.applicant_id, "applicant_id");
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
-  const notifyUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/webhooks/mbti-complated`;
+  const APP_ORIGIN_RAW =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.NEXTAUTH_URL ||
+    "http://localhost:3000";
+  const API_ORIGIN_RAW =
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.NEXTAUTH_URL ||
+    "http://localhost:3000";
+
+  const normalizeOrigin = (value: string) =>
+    /^https?:\/\//i.test(value) ? value : `http://${value}`;
+
+  const appOrigin = normalizeOrigin(APP_ORIGIN_RAW);
+  const apiOrigin = normalizeOrigin(API_ORIGIN_RAW);
+  const notifyUrl = new URL("/api/webhooks/mbti-complated", apiOrigin).toString();
   
 
   const user = await db.user.findUnique({
@@ -49,7 +64,11 @@ export async function CREATE_MBTI_TEST(payload: PayloadMbtiTest) {
   // 2) Buat test di vendor eksternal
   const devilResp = await devilCreateTest({
     companyName: "OSS Bali",
-    returnUrl: `${appUrl}/user/home/apply-job/detail?applicant_id=${payload.applicant_id}`,
+    returnUrl: (() => {
+      const url = new URL("/user/home/apply-job/detail", appOrigin);
+      url.searchParams.set("applicant_id", payload.applicant_id);
+      return url.toString();
+    })(),
     notifyUrl,
     completedMessage: "Thank you for your time.",
     themeColor: "#004A9F",
