@@ -3,7 +3,7 @@ import "./globals.css";
 import GlobalProvider from "./components/global-provider";
 
 export const metadata: Metadata = {
-  title: "OSS Recruitment",
+  title: "Nur Cahaya Tunggal Recruitment",
 };
 
 import { config } from "@fortawesome/fontawesome-svg-core";

@@ -4,9 +4,14 @@ import { GeneralError } from "@/app/utils/general-error";
 import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-export const GET = async () => {
+export const GET = async (req: NextRequest) => {
   try {
-    const data = await GET_LOCATIONS();
+    const merchantId = req.nextUrl.searchParams.get("merchant_id") || undefined;
+    const userId = req.nextUrl.searchParams.get("user_id") || undefined;
+    const data = await GET_LOCATIONS({
+      merchant_id: merchantId,
+      user_id: userId,
+    });
     return NextResponse.json(
       {
         success: true,

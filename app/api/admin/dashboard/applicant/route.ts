@@ -59,9 +59,11 @@ export const POST = async (req: NextRequest) => {
   }
 };
 
-export const GET = async () => {
+export const GET = async (req: NextRequest) => {
   try {
-    const data = await GET_APPLICANTS();
+    const merchantId =
+      req.nextUrl.searchParams.get("merchant_id") || undefined;
+    const data = await GET_APPLICANTS(merchantId);
     return NextResponse.json(
       {
         success: true,

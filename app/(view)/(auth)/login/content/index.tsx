@@ -82,7 +82,7 @@ export default function LoginContent() {
       <div className={styles.content}>
         <div className={styles.grid}>
           <div className={styles.leftPane}>
-            <span className={styles.badge}>OSS Recruitment Platform</span>
+            <span className={styles.badge}>Nur Cahaya Tunggal Recruitment Platform</span>
             <h1 className={styles.title}>
               Build a professional career with the best <span>OSS</span> roles
             </h1>
@@ -104,7 +104,7 @@ export default function LoginContent() {
               <div className={styles.infoCardImage}>
                 <Image
                   src="/assets/images/icon.png"
-                  alt="OSS Recruitment"
+                  alt="Nur Cahaya Tunggal Recruitment"
                   width={64}
                   height={64}
                   priority

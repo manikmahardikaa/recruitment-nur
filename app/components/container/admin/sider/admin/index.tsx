@@ -109,7 +109,7 @@ export const SiderAdmin = () => {
         {!collapsed && (
           <div style={{ lineHeight: 1 }}>
             <Text strong style={{ fontSize: 14, color: token.colorText }}>
-              OSS Recruitment
+              Recruitment
             </Text>
             <div style={{ fontSize: 12, color: token.colorTextTertiary }}>
               Admin Console

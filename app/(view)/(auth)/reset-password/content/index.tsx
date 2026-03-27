@@ -82,12 +82,12 @@ export default function ResetPasswordContent() {
       <div className={styles.content}>
         <div className={styles.grid}>
           <div className={styles.leftPane}>
-            <span className={styles.badge}>OSS Recruitment Platform</span>
+            <span className={styles.badge}>Nur Cahaya Tunggal Recruitment Platform</span>
             <h1 className={styles.title}>
               Set a new <span>secure</span> password
             </h1>
             <p className={styles.subtitle}>
-              Create a strong password to keep your OSS Recruitment profile
+              Create a strong password to keep your Nur Cahaya Tunggal Recruitment profile
               protected.
             </p>
 
@@ -104,7 +104,7 @@ export default function ResetPasswordContent() {
               <div className={styles.infoCardImage}>
                 <Image
                   src="/assets/images/icon.png"
-                  alt="OSS Recruitment"
+                  alt="Nur Cahaya Tunggal Recruitment"
                   width={64}
                   height={64}
                   priority

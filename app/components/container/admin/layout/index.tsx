@@ -16,7 +16,7 @@ import getInitials from "@/app/utils/initials-username";
 import { SiderAdmin } from "../sider/admin";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBell } from "@fortawesome/free-solid-svg-icons";
-import { useChatUnread } from "@/app/hooks/chat";    
+import { useChatUnread } from "@/app/hooks/chat";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/utils/useAuth";
 import { normalizedRole } from "@/app/utils/normalized";
@@ -70,9 +70,8 @@ export default function AdminLayout({
   username: string;
   userProfilePic?: string;
 }) {
-  const router = useRouter();
   const { unreadCount, conversations, isFetching } = useChatUnread();
-  const {role} = useAuth();
+  const { role } = useAuth();
 
   const notificationItems: MenuProps["items"] =
     conversations.length > 0
@@ -120,18 +119,6 @@ export default function AdminLayout({
           },
         ];
 
-  const handleNotificationClick: MenuProps["onClick"] = ({ key }) => {
-    const target = conversations.find((item) => item.conversationId === key);
-    if (!target) return;
-    const applicantId =
-      target.conversation?.applicant?.id ?? target.conversation?.applicantId;
-    if (applicantId) {
-      router.push(`/admin/dashboard/chat-user?applicant_id=${applicantId}`);
-    } else {
-      router.push(`/admin/dashboard/chat`);
-    }
-  };
-
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <SiderAdmin />
@@ -149,28 +136,6 @@ export default function AdminLayout({
               justifyContent: "flex-end",
             }}
           >
-            <Dropdown
-              trigger={["click"]}
-              placement="bottomRight"
-              menu={{
-                items: notificationItems,
-                onClick: handleNotificationClick,
-              }}
-            >
-              <Badge
-                count={unreadCount}
-                overflowCount={99}
-                style={{ backgroundColor: "#ff4d4f" }}
-                offset={[-2, 6]}
-                showZero={false}
-              >
-                <Button
-                  type="text"
-                  loading={isFetching && unreadCount === 0}
-                  icon={<FontAwesomeIcon icon={faBell} />}
-                />
-              </Badge>
-            </Dropdown>
             <Dropdown
               overlay={menu}
               placement="bottomRight"

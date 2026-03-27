@@ -7,7 +7,6 @@ import {
   Typography,
   Space,
   Avatar,
-  Tag,
   Grid,
 } from "antd";
 import {
@@ -36,8 +35,6 @@ export default function TabLayout() {
   const { user_id } = useAuth();
   const { data: detailUserData } = useUser({ id: user_id! });
   const screens = useBreakpoint();
-
-  const interestCount = detailUserData?.interestTags?.length ?? 0;
 
   const completionFields = useMemo(
     () => [
@@ -123,11 +120,6 @@ export default function TabLayout() {
       label: "Last updated",
       value: lastUpdated,
       icon: <UserOutlined style={{ color: "#f59e0b" }} />,
-    },
-    {
-      label: "Interests selected",
-      value: `${interestCount} tags`,
-      icon: <Tag style={{ color: "#ec4899", borderColor: "#ec4899" }} />,
     },
   ];
 

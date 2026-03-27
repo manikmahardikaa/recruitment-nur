@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import {
   Avatar,
-  Badge,
   Button,
   Dropdown,
   Grid,
@@ -17,8 +16,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { LogoutOutlined } from "@ant-design/icons";
 import { signOut } from "next-auth/react";
 import getInitials from "@/app/utils/initials-username";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell } from "@fortawesome/free-solid-svg-icons";
 import { useChatUnread } from "@/app/hooks/chat";
 import { SidebarMainUser } from "@/app/data/user/main/sidebar-data";
 import { SidebarSettingUser } from "@/app/data/user/setting/sidebar-data";
@@ -38,7 +35,6 @@ export default function UserLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { unreadCount, conversations, isFetching } = useChatUnread();
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.md;
 
@@ -107,61 +103,6 @@ export default function UserLayout({
     </Menu>
   );
 
-  const notificationItems: MenuProps["items"] =
-    conversations.length > 0
-      ? conversations.map((item) => {
-          const title = "OSS Recruitment";
-          const updatedAt = item.conversation?.updatedAt
-            ? new Date(item.conversation.updatedAt).toLocaleString()
-            : "";
-          return {
-            key: item.conversationId,
-            label: (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                  maxWidth: 280,
-                }}
-              >
-                <div style={{ fontWeight: 600 }}>{title}</div>
-                <div style={{ fontSize: 12, color: "#8c8c8c" }}>
-                  {item.unreadCount} pesan belum dibaca
-                </div>
-                {updatedAt && (
-                  <div style={{ fontSize: 11, color: "#bfbfbf" }}>
-                    {updatedAt}
-                  </div>
-                )}
-              </div>
-            ),
-          };
-        })
-      : [
-          {
-            key: "empty",
-            disabled: true,
-            label: (
-              <div style={{ padding: "8px 12px", fontSize: 13, color: "#999" }}>
-                No new messages
-              </div>
-            ),
-          },
-        ];
-
-  const handleNotificationClick: MenuProps["onClick"] = ({ key }) => {
-    const target = conversations.find((item) => item.conversationId === key);
-    if (!target) return;
-    const applicantId =
-      target.conversation?.applicant?.id ?? target.conversation?.applicantId;
-    if (applicantId) {
-      router.push(`/user/home/apply-job/${applicantId}/chat`);
-    } else {
-      router.push(`/user/home`);
-    }
-  };
-
   const navButtons = navItems.map((item) => {
     const navItem = item as {
       key?: string;
@@ -211,7 +152,7 @@ export default function UserLayout({
   const brandNode = (
     <div style={{ lineHeight: 1.1 }}>
       <Typography.Text strong style={{ fontSize: 16 }}>
-        OSS Recruitment
+        Nur Cahaya Tunggal Recruitment
       </Typography.Text>
     </div>
   );
@@ -247,28 +188,6 @@ export default function UserLayout({
         justifyContent: isMobile ? "flex-end" : "flex-end",
       }}
     >
-      <Dropdown
-        trigger={["click"]}
-        placement="bottomRight"
-        menu={{
-          items: notificationItems,
-          onClick: handleNotificationClick,
-        }}
-      >
-        <Badge
-          count={unreadCount}
-          overflowCount={99}
-          style={{ backgroundColor: "#ff4d4f" }}
-          offset={[-2, 6]}
-          showZero={false}
-        >
-          <Button
-            type="text"
-            loading={isFetching && unreadCount === 0}
-            icon={<FontAwesomeIcon icon={faBell} />}
-          />
-        </Badge>
-      </Dropdown>
       <Dropdown overlay={menu} placement="bottomRight" trigger={["click"]}>
         <div
           style={{
@@ -377,7 +296,7 @@ export default function UserLayout({
           color: "rgba(0,0,0,0.45)",
         }}
       >
-        {new Date().getFullYear()} · OSS Recruitment
+        {new Date().getFullYear()} · Nur Cahaya Tunggal Recruitment
       </Footer>
     </Layout>
   );

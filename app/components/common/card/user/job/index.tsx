@@ -27,6 +27,7 @@ export default function JobCard({ job }: { job: JobDataModel }) {
   const router = useRouter();
   const workTypeLabel = formatEnum(job.arrangement);
   const employmentLabel = formatEnum(job.commitment);
+  const merchantName = job.merchant?.name || "Merchant Name"
   const locationLabel = job.location?.name || "Flexible";
   const isClosed = hoursLeft < 0;
   return (
@@ -48,7 +49,7 @@ export default function JobCard({ job }: { job: JobDataModel }) {
       >
         <Col>
           <Text style={{ fontSize: 18, fontWeight: 700 }}>
-            {job.job_title}
+            {job.job_title} | {merchantName}
           </Text>
           <br />
           <Space size="small" wrap style={{ marginTop: 10 }}>

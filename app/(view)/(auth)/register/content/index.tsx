@@ -94,7 +94,7 @@ export default function RegisterContent() {
               <div className={styles.infoCardImage}>
                 <Image
                   src="/assets/images/icon.png"
-                  alt="OSS Recruitment"
+                  alt="Nur Cahaya Tunggal Recruitment"
                   width={64}
                   height={64}
                   priority

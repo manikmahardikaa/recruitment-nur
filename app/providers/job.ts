@@ -12,6 +12,7 @@ import {
 type JobFilter = {
   is_published?: boolean;
   includeDrafts?: boolean;
+  merchant_id?: string;
 };
 
 const CONNECTED_STAGES: RecruitmentStage[] = [
@@ -21,7 +22,12 @@ const CONNECTED_STAGES: RecruitmentStage[] = [
   "WAITING",
 ];
 
-function buildStats(applicants: Array<{ stage: RecruitmentStage | null; Conversation: { id: string }[] }>): JobStats {
+function buildStats(
+  applicants: Array<{
+    stage: RecruitmentStage | null;
+    Conversation: { id: string }[];
+  }>,
+): JobStats {
   let chatStarted = 0;
   let connected = 0;
   let notSuitable = 0;
@@ -48,7 +54,7 @@ const selectApplicantsForStats = {
 
 export const GET_JOBS = async (
   filter?: JobFilter,
-  user_id?: string
+  user_id?: string,
 ): Promise<JobDataModel[]> => {
   const where: Record<string, unknown> = {};
 
@@ -63,19 +69,20 @@ export const GET_JOBS = async (
   if (user_id) {
     where.user_id = user_id;
   }
+  if (filter?.merchant_id) {
+    where.merchant_id = filter.merchant_id;
+  }
 
   const rows = await db.job.findMany({
-    where: Object.keys(where).length ? (where as Prisma.JobWhereInput) : undefined,
+    where: Object.keys(where).length
+      ? (where as Prisma.JobWhereInput)
+      : undefined,
     include: {
       location: true,
       Applicant: {
         select: selectApplicantsForStats,
       },
-      referralLinks: {
-        where: { is_active: true },
-        orderBy: { createdAt: "desc" },
-        take: 1,
-      },
+      merchant: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -159,7 +166,7 @@ export const CREATE_JOB = async (payload: JobPayloadCreateModel) => {
 
 export const UPDATE_JOB = async (
   id: string,
-  payload: JobPayloadUpdateModel
+  payload: JobPayloadUpdateModel,
 ) => {
   const result = await db.$transaction(async (tx) => {
     const job = await tx.job.update({
@@ -233,4 +240,4 @@ export const PUBLISH_JOB = async (id: string) => {
     include: { location: true },
   });
   return result;
-}
+};

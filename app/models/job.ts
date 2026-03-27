@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 
-import { Prisma, Job, Location, ReferralLink } from "@prisma/client";
+import { Prisma, Job, Location, Merchant } from "@prisma/client";
 import { GeneralOmitModel } from "./general-omit";
 
 export type JobStats = {
@@ -11,8 +11,8 @@ export type JobStats = {
 
 export interface JobDataModel extends Job {
   location: Location | null;
+  merchant?: Merchant | null;
   stats?: JobStats;
-  referralLinks?: ReferralLink[];
 }
 
 export interface JobPayloadCreateModel

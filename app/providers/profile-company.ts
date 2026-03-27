@@ -13,6 +13,15 @@ export const GET_PROFILE_COMPANY_USER_ID = async (id: string) => {
   return result;
 };
 
+export const GET_PROFILE_COMPANY_MERCHANT_ID = async (id: string) => {
+  const result = await db.profileCompany.findFirst({
+    where: {
+      merchant_id: id,
+    },
+  });
+  return result;
+};
+
 export const CREATE_PROFILE_COMPANY = async (
   payload: ProfileCompanyPayloadCreateModel
 ) => {

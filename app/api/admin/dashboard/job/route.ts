@@ -149,6 +149,7 @@ const parseCreatePayload = (body: any): JobPayloadCreateModel => {
     salary_max,
     name,
     title,
+    merchant_id,
   } = body;
 
   const isDraft = body?.is_draft === true;
@@ -184,9 +185,7 @@ const parseCreatePayload = (body: any): JobPayloadCreateModel => {
       : typeof body?.locationId === "string"
       ? body.locationId
       : undefined;
-  if (!normalizedLocationId && !isDraft) {
-    throw new Error("Location is required");
-  }
+  // Location is optional; allow null for non-draft jobs.
 
   const rawUntilAt = until_at ?? body?.untilAt ?? body?.until;
   let untilAtDate: Date | null = null;
@@ -260,6 +259,12 @@ const parseCreatePayload = (body: any): JobPayloadCreateModel => {
       normalizedType === "REFFERAL" ? false : Boolean(show_salary),
     is_have_domicile: Boolean(is_have_domicile),
     user_id: typeof user_id === "string" ? user_id : undefined,
+    merchant_id:
+      typeof merchant_id === "string"
+        ? merchant_id
+        : typeof body?.merchantId === "string"
+        ? body.merchantId
+        : undefined,
     step: Number.isFinite(Number(step)) ? Number(step) : 0,
   };
 
@@ -280,12 +285,14 @@ export const GET = async (req: NextRequest) => {
 
     const includeDrafts = req.nextUrl.searchParams.get("draft") === "true";
     const userId = req.nextUrl.searchParams.get("user_id") || undefined;
+    const merchantId =
+      req.nextUrl.searchParams.get("merchant_id") || undefined;
 
     const data = await GET_JOBS(
       filter
-        ? { ...filter, includeDrafts }
-        : includeDrafts
-        ? { includeDrafts: true }
+        ? { ...filter, includeDrafts, merchant_id: merchantId }
+        : includeDrafts || merchantId
+        ? { includeDrafts: includeDrafts || undefined, merchant_id: merchantId }
         : undefined,
       userId
     );

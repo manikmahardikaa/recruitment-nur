@@ -120,6 +120,8 @@ model Job {
   step                 Int            @default(0)
   user_id              String?
   owner                User?          @relation("JobOwner", fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  merchant_id          String?
+  merchant             Merchant?      @relation(fields: [merchant_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   location_id String?
   location    Location?   @relation(fields: [location_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -156,8 +158,10 @@ model Location {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   user_id   String
+  merchant_id String?
 
   user          User            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  merchant      Merchant?       @relation(fields: [merchant_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   job           Job[]
   scheduleHired ScheduleHired[]
 
@@ -202,6 +206,19 @@ model User {
   @@map("user")
 }
 
+model Merchant {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs       Job[]
+  locations  Location[]
+  applicants Applicant[]
+
+  @@map("merchant")
+}
+
 model PasswordResetToken {
   id        String   @id @default(cuid())
   user_id   String
@@ -232,6 +249,8 @@ model Applicant {
   user      User              @relation("UserApplicant", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   job_id    String
   job       Job               @relation(fields: [job_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  merchant_id String?
+  merchant    Merchant?       @relation(fields: [merchant_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   stage     RecruitmentStage? @default(SCREENING)
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt

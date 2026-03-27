@@ -113,3 +113,21 @@ export const useLocationByUserId = ({ id }: { id?: string }) => {
     fetchLoading,
   };
 };
+
+export const useLocationByMerchantId = ({ id }: { id?: string }) => {
+  const { data, isLoading: fetchLoading } = useQuery({
+    queryKey: [entity, "merchant", id],
+    queryFn: async () => {
+      const result = await axios.get(
+        `${baseUrl}/location-by-merchantId?merchantId=${id}`
+      );
+      return result.data.result as LocationDataModel[];
+    },
+    enabled: Boolean(id),
+  });
+
+  return {
+    data,
+    fetchLoading,
+  };
+};

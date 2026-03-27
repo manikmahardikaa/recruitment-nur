@@ -65,7 +65,7 @@ export default function ForgotPasswordContent() {
       <div className={styles.content}>
         <div className={styles.grid}>
           <div className={styles.leftPane}>
-            <span className={styles.badge}>OSS Recruitment Platform</span>
+            <span className={styles.badge}>Nur Cahaya Tunggal Recruitment Platform</span>
             <h1 className={styles.title}>
               Recover access to your <span>OSS</span> candidate account
             </h1>
@@ -87,7 +87,7 @@ export default function ForgotPasswordContent() {
               <div className={styles.infoCardImage}>
                 <Image
                   src="/assets/images/icon.png"
-                  alt="OSS Recruitment"
+                  alt="Nur Cahaya Tunggal Recruitment"
                   width={64}
                   height={64}
                   priority
@@ -116,7 +116,7 @@ export default function ForgotPasswordContent() {
               </div>
 
               <p className={styles.formHelper}>
-                Use the email associated with your OSS Recruitment account.
+                Use the email associated with your Nur Cahaya Tunggal Recruitment account.
               </p>
 
               <Form

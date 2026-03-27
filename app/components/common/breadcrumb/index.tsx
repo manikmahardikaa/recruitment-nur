@@ -164,8 +164,8 @@ function useResolvedLabels(segments: string[]) {
 
 /** ===== 6) Komponen Breadcrumb ===== */
 const PATH_REDIRECTS: Record<string, string> = {
-  "/admin": "/admin/dashboard/recruitment",
-  "/admin/dashboard": "/admin/dashboard/recruitment",
+  "/admin": "/admin/dashboard/merchant-recruitment",
+  "/admin/dashboard": "/admin/dashboard/merchant-recruitment",
   "/admin/dashboard/evaluator": "/admin/dashboard/evaluator/list",
   "/admin/dashboard/assignment-setting":
     "/admin/dashboard/assignment-setting/screening-question",

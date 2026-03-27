@@ -284,7 +284,7 @@ export async function sendPasswordResetEmail(
     },
   });
 
-  const subject = "Reset your password - OSS Recruitment";
+  const subject = "Reset your password - Nur Cahaya Tunggal Recruitment";
 
   await transporter.sendMail({
     from: `"One Step Solution (OSS) Bali" <${process.env.EMAIL_USERNAME}>`,

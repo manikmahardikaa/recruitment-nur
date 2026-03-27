@@ -4,8 +4,16 @@ import {
   LocationPayloadUpdateModel,
 } from "../models/location";
 
-export const GET_LOCATIONS = async () => {
-  const result = await db.location.findMany({});
+export const GET_LOCATIONS = async (params?: {
+  merchant_id?: string;
+  user_id?: string;
+}) => {
+  const result = await db.location.findMany({
+    where: {
+      ...(params?.merchant_id ? { merchant_id: params.merchant_id } : {}),
+      ...(params?.user_id ? { user_id: params.user_id } : {}),
+    },
+  });
   return result;
 };
 
@@ -26,6 +34,15 @@ export const GET_LOCATION_BY_USER_ID = async (user_id: string) => {
   });
   return result;
 }
+
+export const GET_LOCATION_BY_MERCHANT_ID = async (merchant_id: string) => {
+  const result = await db.location.findMany({
+    where: {
+      merchant_id,
+    },
+  });
+  return result;
+};
 
 export const CREATE_LOCATION = async (payload: LocationPayloadCreateModel) => {
   const result = await db.location.create({

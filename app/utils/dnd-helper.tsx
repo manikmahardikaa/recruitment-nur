@@ -108,7 +108,7 @@ export default function DraggableCandidateItem({
           to: applicant?.user?.phone ?? "",
           name: applicant?.user?.name ?? "",
           position: applicant?.job?.job_title ?? "",
-          message: `Hello ${applicant?.user?.name ?? "Candidate"},\n\nI am from the OSS Recruitment team. I would like to discuss your application further for the ${applicant?.job?.job_title ?? "-"} position. Please reply to this message if you have any questions.\n\nThank you!`,
+          message: `Hello ${applicant?.user?.name ?? "Candidate"},\n\nI am from the Nur Cahaya Tunggal Recruitment team. I would like to discuss your application further for the ${applicant?.job?.job_title ?? "-"} position. Please reply to this message if you have any questions.\n\nThank you!`,
         });
         break;
       }

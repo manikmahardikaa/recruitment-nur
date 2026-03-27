@@ -17,9 +17,7 @@ import {
   Steps,
   Tag,
   Typography,
-  List,
   Button,
-  Tooltip,
   Divider,
   Modal,
   Progress,
@@ -37,13 +35,11 @@ import {
   LaptopOutlined,
   CloseCircleOutlined,
   FileTextOutlined,
-  CalendarOutlined,
   FileDoneOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { ApplicantDataModel } from "@/app/models/applicant";
-import ResultMBTIComponent from "./ResultMBTIComponent";
 import { useUser } from "@/app/hooks/user";
 import { useOfferingContractByApplicantId } from "@/app/hooks/offering-contract";
 import Link from "next/link";
@@ -58,7 +54,6 @@ import {
 import SignaturePadUploader from "./SignatureUploader";
 import { useScheduleHiredsByApplicantId } from "@/app/hooks/schedule-hired";
 import { formatDateTime } from "@/app/utils/date-helper";
-import { useProcedureDocuments } from "@/app/hooks/procedure-document";
 import LoadingSplash from "@/app/components/common/custom-loading";
 import UploadIdentityComponentManual from "./UploadIdentityComponentManual";
 
@@ -133,7 +128,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
   const [decisionMode, setDecisionMode] = useState<"ACCEPT" | "DECLINE" | null>(
-    null
+    null,
   );
   const [isContractPreviewOpen, setIsContractPreviewOpen] = useState(false);
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
@@ -148,23 +143,10 @@ export default function CandidateProgress({ applicant, meta }: Props) {
   const [isDraggingSig, setIsDraggingSig] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const router = useRouter();
-  const { data: procedureDocuments, fetchLoading: procedureDocumentsLoading } =
-    useProcedureDocuments({});
   const { data: scheduleHired } = useScheduleHiredsByApplicantId({
     applicantId: applicant.id || "",
   });
   const currentStage = toProgressStage(applicant.stage);
-  const applicantStageKey = coerceStage(applicant.stage);
-  const stageProcedureDocuments = useMemo(() => {
-    if (!Array.isArray(procedureDocuments)) return [];
-    if (!applicantStageKey) return [];
-    return procedureDocuments.filter(
-      (doc) => coerceStage(doc.stage) === applicantStageKey
-    );
-  }, [procedureDocuments, applicantStageKey]);
-  const procedureDocumentStageLabel = getStageLabel(
-    applicantStageKey || currentStage
-  );
   const nowStageIndex = stageOrder.findIndex((s) => s === currentStage);
   const normalizedStageIndex = nowStageIndex === -1 ? 0 : nowStageIndex;
   const { data: locations } = useLocations({});
@@ -209,7 +191,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
     contractByApplicant?.candidateSignedPdfUrl || null;
   const finalDocumentUrl = useMemo(
     () => directorSignedPdfUrl || candidateSignedPdfUrl || null,
-    [candidateSignedPdfUrl, directorSignedPdfUrl]
+    [candidateSignedPdfUrl, directorSignedPdfUrl],
   );
   const firstPartyName =
     process.env.NEXT_PUBLIC_CONTRACT_FIRST_PARTY_NAME ||
@@ -233,7 +215,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
         },
       });
     },
-    [applicant.user_id, onPatchDocument]
+    [applicant.user_id, onPatchDocument],
   );
 
   const handleOpenModal = useCallback(() => {
@@ -249,8 +231,8 @@ export default function CandidateProgress({ applicant, meta }: Props) {
       decisionStatus === "ACCEPTED"
         ? "ACCEPT"
         : decisionStatus === "DECLINED"
-        ? "DECLINE"
-        : null
+          ? "DECLINE"
+          : null,
     );
     setSignatureUrl(signatureUrlFromServer);
     setSignaturePath(signaturePathFromServer);
@@ -286,7 +268,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
         setIsContractPreviewOpen(false);
       }
     },
-    [contractUrl, isDecisionLocked]
+    [contractUrl, isDecisionLocked],
   );
 
   const handleSubmitAcceptance = useCallback(async () => {
@@ -316,7 +298,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
       handleCloseDecisionModal();
     } catch (error) {
       message.error(
-        `Failed to submit your decision. Please try again ${error}`
+        `Failed to submit your decision. Please try again ${error}`,
       );
     }
   }, [
@@ -347,7 +329,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
       handleCloseDecisionModal();
     } catch (error) {
       message.error(
-        `Failed to submit your decision. Please try again. ${error}`
+        `Failed to submit your decision. Please try again. ${error}`,
       );
     }
   }, [
@@ -402,12 +384,9 @@ export default function CandidateProgress({ applicant, meta }: Props) {
     stage: string,
     applicant: ApplicantDataModel,
     router: ReturnType<typeof useRouter>,
-    meta?: Props["meta"]
+    meta?: Props["meta"],
   ) {
     const m = meta || {};
-
-    const mbtiUrl = applicant.mbti_test?.link_url || undefined;
-    const mbtiDone = applicant.mbti_test?.is_complete === true;
 
     switch (stage) {
       case "APPLICATION":
@@ -429,7 +408,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
                 onClick: () =>
                   window.open(
                     applicant.user?.curiculum_vitae_url || "#",
-                    "_blank"
+                    "_blank",
                   ),
                 disabled: !applicant.user?.curiculum_vitae_url,
                 tooltip: !applicant.user?.curiculum_vitae_url
@@ -443,34 +422,8 @@ export default function CandidateProgress({ applicant, meta }: Props) {
       case "SCREENING":
         return {
           title: "Screening Stage Details",
-          info: [
-            { label: "STATUS", value: mbtiDone ? "Completed" : "In Progress" },
-            // {
-            //   label: "DEADLINE",
-            //   value: dayjs(deadline).format("MMMM D, YYYY"),
-            // },
-            // {
-            //   label: "STARTED ON",
-            //   value: dayjs(startedOn).format("MMMM D, YYYY"),
-            // },
-            // { label: "ASSIGNED TO", value: m.assignedTo || "Recruitment Team" },
-          ],
-          actions: [
-            {
-              key: "mbti",
-              label: "Complete MBTI Personality Test",
-              button: {
-                text: mbtiDone ? "Done" : "Take MBTI Test",
-                disabled: mbtiDone ? true : !mbtiUrl,
-                tooltip: mbtiDone
-                  ? "Already completed"
-                  : mbtiUrl
-                  ? "Open MBTI Test"
-                  : "Link unavailable",
-                onClick: () => mbtiUrl && window.open(mbtiUrl, "_blank"),
-              },
-            },
-          ] as ActionItem[],
+          info: [{ label: "STATUS", value: "In Progress" }],
+          actions: [] as ActionItem[],
         };
 
       case "INTERVIEW": {
@@ -485,7 +438,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
         const now = Date.now();
         const upcomingInterview =
           interviews.find(
-            (item) => dayjs(item.start_time ?? item.date).valueOf() >= now
+            (item) => dayjs(item.start_time ?? item.date).valueOf() >= now,
           ) ?? null;
         const latestInterview =
           interviews.length > 0 ? interviews[interviews.length - 1] : null;
@@ -568,7 +521,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
                   window.open(
                     `/evaluator/schedule?applicant_id=${applicant.id}`,
                     "_blank",
-                    "noopener,noreferrer"
+                    "noopener,noreferrer",
                   ),
               },
             },
@@ -598,7 +551,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
 
         // Toleransi salah eja "REFERRAL" vs "REFFERAL"
         const isReferralJob = ["REFERRAL", "REFFERAL"].includes(
-          (applicant.job?.type_job ?? "").toUpperCase()
+          (applicant.job?.type_job ?? "").toUpperCase(),
         );
 
         const actions: ActionItem[] = [
@@ -755,7 +708,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
               onClick: () =>
                 window.open(
                   `/user/home/apply-job/detail/employee-setup?applicant_id=${applicant.id}`,
-                  "_blank"
+                  "_blank",
                 ),
             },
           },
@@ -834,7 +787,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
       : Math.max(stageOrder.length - 1, 1);
   const progressPosition = Math.min(normalizedStageIndex + 1, progressTotal);
   const stageProgressPercent = Math.round(
-    (progressPosition / progressTotal) * 100
+    (progressPosition / progressTotal) * 100,
   );
   const nextStageKey =
     normalizedStageIndex < stageOrder.length - 1
@@ -844,10 +797,10 @@ export default function CandidateProgress({ applicant, meta }: Props) {
     nextStageKey != null
       ? getStageLabel(nextStageKey)
       : currentStage === "REJECTED"
-      ? "Process Closed"
-      : "Journey Complete";
+        ? "Process Closed"
+        : "Journey Complete";
   const statusInfo = stageConfig.info.find(
-    (item) => item.label?.toUpperCase?.() === "STATUS"
+    (item) => item.label?.toUpperCase?.() === "STATUS",
   );
   const statusValue =
     typeof statusInfo?.value === "string"
@@ -882,7 +835,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
       nextStageLabel,
       primaryAction?.label,
       statusValue,
-    ]
+    ],
   );
 
   const stepsItems = useMemo(
@@ -893,8 +846,8 @@ export default function CandidateProgress({ applicant, meta }: Props) {
         const status: "finish" | "process" | "wait" = isCompleted
           ? "finish"
           : isCurrent
-          ? "process"
-          : "wait";
+            ? "process"
+            : "wait";
         let descriptor: string;
         if (isCompleted) {
           descriptor = "Completed";
@@ -924,7 +877,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
           status,
         };
       }),
-    [normalizedStageIndex]
+    [normalizedStageIndex],
   );
 
   return (
@@ -977,7 +930,10 @@ export default function CandidateProgress({ applicant, meta }: Props) {
                     </Avatar>
                     <Space direction="vertical" size={4}>
                       <Title level={3} style={{ margin: 0, color: "#fff" }}>
-                        {applicant.user?.name || "Candidate"} ·{" "}
+                        {applicant.merchant?.name ||
+                          applicant.job?.merchant?.name ||
+                          "Candidate"}{" "}
+                        ·{" "}
                         {applicant.job?.job_title || "—"}
                       </Title>
                       <Text style={{ color: "rgba(255,255,255,0.75)" }}>
@@ -1022,7 +978,7 @@ export default function CandidateProgress({ applicant, meta }: Props) {
                       boxShadow: "0 12px 24px rgba(255,206,115,0.35)",
                     }}
                     onClick={() =>
-                      router.push(`/user/home/apply-job/${applicant.id}/chat`)
+                      window.open("https://wa.me/6281338948759", "_blank")
                     }
                     icon={<MessageOutlined />}
                   >
@@ -1143,164 +1099,8 @@ export default function CandidateProgress({ applicant, meta }: Props) {
               </>
             )}
 
-            <Title level={5} style={{ marginBottom: 12 }}>
-              Required Actions
-            </Title>
-            {stageConfig.actions.length > 0 ? (
-              <List
-                split={false}
-                dataSource={stageConfig.actions}
-                renderItem={(act) => (
-                  <List.Item
-                    key={act.key}
-                    style={{
-                      padding: "12px 16px",
-                      background: "#f9fafc",
-                      borderRadius: 14,
-                      marginBottom: 12,
-                    }}
-                    actions={
-                      act.button
-                        ? [
-                            <Tooltip
-                              key={`${act.key}-tt`}
-                              title={act.button.tooltip || act.button.text}
-                            >
-                              <Button
-                                type="primary"
-                                disabled={act.button.disabled}
-                                onClick={act.button.onClick}
-                                icon={
-                                  act.key === "schedule" ? (
-                                    <CalendarOutlined />
-                                  ) : act.key === "offer" ? (
-                                    <FileDoneOutlined />
-                                  ) : undefined
-                                }
-                              >
-                                {act.button.text}
-                              </Button>
-                            </Tooltip>,
-                          ]
-                        : undefined
-                    }
-                  >
-                    <List.Item.Meta
-                      title={
-                        <Text strong style={{ fontSize: 14 }}>
-                          {act.label}
-                        </Text>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
-            ) : (
-              <Text type="secondary">
-                No outstanding actions at this stage.
-              </Text>
-            )}
           </Card>
 
-          <Card
-            bordered={false}
-            style={{
-              borderRadius: 20,
-              background: "#ffffff",
-              boxShadow: "0 20px 56px rgba(15,23,42,0.1)",
-            }}
-            title={
-              <Space align="center">
-                <FileTextOutlined />
-                <span>Procedure Documents · {procedureDocumentStageLabel}</span>
-              </Space>
-            }
-            bodyStyle={{ paddingTop: 16 }}
-          >
-            <Space direction="vertical" size={16} style={{ width: "100%" }}>
-              <Text type="secondary">
-                Review these files to stay ready for the{" "}
-                {procedureDocumentStageLabel} stage.
-              </Text>
-              {procedureDocumentsLoading ? (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    padding: "24px 0",
-                  }}
-                >
-                  <LoadingSplash />
-                </div>
-              ) : stageProcedureDocuments.length > 0 ? (
-                <List
-                  split={false}
-                  dataSource={stageProcedureDocuments}
-                  renderItem={(doc) => {
-                    const updatedAtLabel =
-                      doc.updatedAt && dayjs(doc.updatedAt).isValid()
-                        ? dayjs(doc.updatedAt).format("MMM D, YYYY")
-                        : null;
-                    return (
-                      <List.Item
-                        key={doc.id}
-                        style={{
-                          padding: "12px 16px",
-                          background: "#f9fafc",
-                          borderRadius: 14,
-                          marginBottom: 12,
-                        }}
-                        actions={[
-                          <Button
-                            key={`${doc.id}-download`}
-                            type="link"
-                            icon={<DownloadOutlined />}
-                            href={doc.filePath}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Open Document
-                          </Button>,
-                        ]}
-                      >
-                        <List.Item.Meta
-                          title={<Text strong>{doc.name}</Text>}
-                          description={
-                            <Space size={8}>
-                              <Tag color="blue">{getStageLabel(doc.stage)}</Tag>
-                              {updatedAtLabel && (
-                                <Text type="secondary">
-                                  Updated {updatedAtLabel}
-                                </Text>
-                              )}
-                            </Space>
-                          }
-                        />
-                      </List.Item>
-                    );
-                  }}
-                />
-              ) : (
-                <Empty
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description={`No documents available for the ${procedureDocumentStageLabel} stage.`}
-                />
-              )}
-            </Space>
-          </Card>
-
-          {currentStage === "SCREENING" && applicant.mbti_test?.result && (
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: 20,
-                background: "#ffffff",
-                boxShadow: "0 20px 56px rgba(15,23,42,0.1)",
-              }}
-            >
-              <ResultMBTIComponent result={applicant.mbti_test.result} />
-            </Card>
-          )}
 
           <Modal
             open={isDecisionModalOpen}
@@ -1402,7 +1202,11 @@ export default function CandidateProgress({ applicant, meta }: Props) {
                   style={{ borderRadius: 16 }}
                   bodyStyle={{ padding: 16 }}
                 >
-                  <Space direction="vertical" size={12} style={{ display: "block" }}>
+                  <Space
+                    direction="vertical"
+                    size={12}
+                    style={{ display: "block" }}
+                  >
                     <div
                       style={{
                         display: "flex",
@@ -1430,8 +1234,8 @@ export default function CandidateProgress({ applicant, meta }: Props) {
                         <div>
                           <Text strong>Review the contract</Text>
                           <Text type="secondary" style={{ display: "block" }}>
-                            Read the contract before signing. Open the preview or
-                            download the file.
+                            Read the contract before signing. Open the preview
+                            or download the file.
                           </Text>
                         </div>
                       </Space>
@@ -1533,11 +1337,14 @@ export default function CandidateProgress({ applicant, meta }: Props) {
                         {applicant.job.type_job?.toString().toUpperCase() ===
                           "REFERRAL" && (
                           <Text strong>
-                            Second Party —{" "}
-                            {applicant.user?.name || "Candidate"}
+                            Second Party — {applicant.user?.name || "Candidate"}
                           </Text>
                         )}
-                        <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                        <Space
+                          direction="vertical"
+                          size={8}
+                          style={{ width: "100%" }}
+                        >
                           <Text type="secondary">Contract preview</Text>
                           <div
                             ref={sigBoxDecisionRef}

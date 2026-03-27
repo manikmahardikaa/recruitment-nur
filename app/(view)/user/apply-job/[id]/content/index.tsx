@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   Button,
   Card,
@@ -12,6 +13,7 @@ import {
   Space,
   Tag,
   Typography,
+  message,
 } from "antd";
 import {
   CalendarOutlined,
@@ -23,6 +25,7 @@ import {
 import dayjs from "dayjs";
 
 import { useJob, useReferralJob } from "@/app/hooks/job";
+import { useCandidates } from "@/app/hooks/applicant";
 import { useMobile } from "@/app/hooks/use-mobile";
 import { sanitizeHtml } from "@/app/utils/sanitize-html";
 import { toCapitalized } from "@/app/utils/capitalized";
@@ -82,26 +85,47 @@ function SectionHeader({
 export default function ApplyJobContent() {
   const { id, code } = useParams() as { id?: string; code?: string };
   const router = useRouter();
+  const { data: session, status } = useSession();
   const { data, fetchLoading: isJobLoading } = useJob({ id: id ?? "" });
   const { data: referralData, fetchLoading: isReferralLoading } =
     useReferralJob({ code: code ?? "" });
   const isMobile = useMobile();
   const isReferral = Boolean(code && !id);
   const jobData = isReferral ? referralData?.job : data;
+  const jobId = id ?? referralData?.job?.id;
   const isLoading = isReferral ? isReferralLoading : isJobLoading;
+  const { onCreate: createApplicant, onCreateLoading: isApplying } =
+    useCandidates({});
 
   const overviewHTML = useMemo(
     () => sanitizeHtml(jobData?.description ?? ""),
     [jobData?.description]
   );
 
-  const goToQuestinScreening = () => {
-    if (code) {
-      router.push(`/apply/ref/${code}/question-screening`);
+  const submitApplication = async () => {
+    if (status === "loading") return;
+    if (!session?.user?.id) {
+      const target = id ? `/user/apply-job/${id}` : "/user/apply-job";
+      router.push(`/login?callbackUrl=${encodeURIComponent(target)}`);
       return;
     }
-    if (id) {
-      router.push(`/user/apply-job/${id}/question-screening`);
+    if (!jobId) {
+      message.error("Job information is unavailable.");
+      return;
+    }
+    try {
+      await createApplicant({
+        user_id: session.user.id,
+        job_id: jobId,
+      });
+      message.success("Application submitted.");
+      router.push("/user/home/apply-job");
+    } catch (error) {
+      if (error instanceof Error) {
+        message.error(error.message);
+      } else {
+        message.error("Failed to submit application.");
+      }
     }
   };
 
@@ -195,7 +219,7 @@ export default function ApplyJobContent() {
           jobName={jobData?.job_title}
           locationLabel={formattedLocation}
           closingDate={formattedClosingDate}
-          onApply={goToQuestinScreening}
+          onApply={submitApplication}
         />
 
         <Row gutter={isMobile ? [16, 16] : [24, 24]}>
@@ -314,8 +338,8 @@ export default function ApplyJobContent() {
                 Ready to move forward?
               </Title>
               <Text type="secondary">
-                Submit your application and complete the screening questions to
-                let recruiters know you are interested.
+                Submit your application to let recruiters know you are
+                interested.
               </Text>
             </Col>
             <Col
@@ -332,11 +356,10 @@ export default function ApplyJobContent() {
                   background:
                     "linear-gradient(135deg, #1f4ed8 0%, #5a67f2 100%)",
                 }}
-                onClick={goToQuestinScreening}
+                onClick={submitApplication}
+                loading={isApplying}
               >
-                {jobData?.type_job === "REFFERAL"
-                  ? "Continue to Form"
-                  : "Submit Application"}
+                Submit Application
               </Button>
             </Col>
           </Row>

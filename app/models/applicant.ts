@@ -5,40 +5,25 @@ import { GeneralOmitModel } from "./general-omit";
 
 export type ApplicantDataModel = Prisma.ApplicantGetPayload<{
   include: {
+    merchant: true;
     job: {
       include: {
         location: true;
       };
     };
     user: true;
-    mbti_test: true;
-    scheduleInterview: true;
-    evaluatorAssignment: {
-      include: {
-        evaluator: true;
-        baseMatriks: {
-          include: {
-            columns: true;
-            rows: {
-              include: {
-                matriksQuestionOption: {
-                  orderBy: [{ order: "asc" }, { createdAt: "asc" }];
-                };
-              };
-              orderBy: [{ order: "asc" }, { createdAt: "asc" }];
-            };
-          };
-        };
-      }
-    }
   };
 }>;
 
 export interface ApplicantPayloadCreateModel
   extends Prisma.ApplicantUncheckedCreateInput {}
 
-export interface ApplicantPayloadUpdateModel
-  extends Omit<Prisma.ApplicantUncheckedUpdateInput, GeneralOmitModel> {}
+export interface ApplicantPayloadUpdateModel extends Omit<
+  Prisma.ApplicantUncheckedUpdateInput,
+  GeneralOmitModel
+> {}
 
-export interface ApplicantFormModel
-  extends Omit<ApplicantDataModel, GeneralOmitModel> {}
+export interface ApplicantFormModel extends Omit<
+  ApplicantDataModel,
+  GeneralOmitModel
+> {}

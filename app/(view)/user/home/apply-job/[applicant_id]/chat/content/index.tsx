@@ -356,7 +356,7 @@ export default function ChatPage() {
         currentUser={currentUser}
         peer={{
           id: "agent-1",
-          name: "OSS Recruitment",
+          name: "Nur Cahaya Tunggal Recruitment",
           online: peerOnline,
           typing: peerTyping,
         }}
