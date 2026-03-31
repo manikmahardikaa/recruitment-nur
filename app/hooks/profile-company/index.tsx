@@ -73,24 +73,6 @@ export const useProfileCompany = () => {
   };
 };
 
-export const useProfileCompanyByUserId = ({ id }: { id?: string }) => {
-  const { data, isLoading: fetchLoading } = useQuery({
-    queryKey: [entity, id],
-    queryFn: async () => {
-      const result = await axios.get(
-        `${baseUrl}/profile-company-by-userId?userId=${id}`
-      );
-      return result.data.result as ProfileCompanyDataModel;
-    },
-    enabled: Boolean(id),
-  });
-
-  return {
-    data,
-    fetchLoading,
-  };
-};
-
 export const useProfileCompanyByMerchantId = ({ id }: { id?: string }) => {
   const { data, isLoading: fetchLoading } = useQuery({
     queryKey: [entity, "merchant", id],

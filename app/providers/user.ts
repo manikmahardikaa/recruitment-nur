@@ -33,7 +33,7 @@ export const GET_USERS = async () => {
 }
 
 export const CREATE_USER = async (payload: UserPayloadCreateModel) => {
-  const { interestTags, password, ...rest } = payload;
+  const { password, ...rest } = payload;
   const hashedPassword = await bcrypt.hash(password, 10);
   const normalizedDob = normalizeDateInput(
     (rest as Record<string, unknown>).date_of_birth
@@ -42,42 +42,18 @@ export const CREATE_USER = async (payload: UserPayloadCreateModel) => {
     (rest as Record<string, unknown>).date_of_birth = normalizedDob;
   }
 
-  const result = await db.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        ...rest,
-        password: hashedPassword,
-      },
-    });
-
-    if (Array.isArray(interestTags) && interestTags.length > 0) {
-      await tx.userInterestTag.createMany({
-        data: interestTags
-          .filter((interest) => Boolean(interest?.trim()))
-          .map((interest) => ({
-            user_id: user.id,
-            interest: interest.trim(),
-          })),
-        skipDuplicates: true,
-      });
-    }
-
-    return tx.user.findUnique({
-      where: { id: user.id },
-      include: { interestTags: true },
-    });
+  return db.user.create({
+    data: {
+      ...rest,
+      password: hashedPassword,
+    },
   });
-
-  return result;
 };
 
 export const GET_USER = async (id: string) => {
   const result = await db.user.findUnique({
     where: {
       id,
-    },
-    include: {
-      interestTags: true,
     },
   });
   return result;
@@ -87,12 +63,7 @@ export const UPDATE_USER = async (
   id: string,
   payload: UserPayloadUpdateModel
 ) => {
-  const {
-    interestTags,
-    password,
-    date_of_birth,
-    ...restPayload
-  } = payload ?? {};
+  const { password, date_of_birth, ...restPayload } = payload ?? {};
 
   const normalizedDob = normalizeDateInput(date_of_birth);
 
@@ -122,39 +93,12 @@ export const UPDATE_USER = async (
     }
   }
 
-  const result = await db.$transaction(async (tx) => {
-    const updated = await tx.user.update({
-      where: {
-        id,
-      },
-      data,
-    });
-
-    if (Array.isArray(interestTags)) {
-      await tx.userInterestTag.deleteMany({
-        where: { user_id: id },
-      });
-
-      if (interestTags.length > 0) {
-        await tx.userInterestTag.createMany({
-          data: interestTags
-            .filter((interest) => Boolean(interest?.trim()))
-            .map((interest) => ({
-              user_id: id,
-              interest: interest.trim(),
-            })),
-          skipDuplicates: true,
-        });
-      }
-    }
-
-    return tx.user.findUnique({
-      where: { id: updated.id },
-      include: { interestTags: true },
-    });
+  return db.user.update({
+    where: {
+      id,
+    },
+    data,
   });
-
-  return result;
 };
 
 export const DELETE_USER = async (id: string) => {

@@ -122,25 +122,6 @@ export default function JobCard({
   onShowRecommendations,
 }: Props) {
   const published = Boolean(job.is_published);
-
-  const handleGeneratePoster = async () => {
-    try {
-      const url = await generateJobPoster(job);
-      const safeName = (job.job_title || "job")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-      const filename = `${safeName || "job"}-poster.png`;
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-    } catch (error) {
-      console.error("[job-poster] failed to generate poster", error);
-    }
-  };
-
   const menu = {
     items: [
       { key: "edit", label: "Edit", onClick: () => onEdit(job.id) },
@@ -181,9 +162,6 @@ export default function JobCard({
           </Title>
 
           <Space size="small">
-            <Tag color={job.type_job === "REFFERAL" ? "purple" : "gold"}>
-              {typeLabel}
-            </Tag>
             <Tooltip title={workTypeLabel}>
               <Tag color="blue">{workTypeLabel}</Tag>
             </Tooltip>
@@ -275,9 +253,6 @@ export default function JobCard({
         {/* <Button icon={<ThunderboltOutlined />} type="default">
           Boost Job
         </Button> */}
-        <Button type="primary" onClick={() => goToPage()}>
-          Manage Candidates
-        </Button>
         {/* <Button onClick={() => onShowRecommendations(job)}>
           Recommended Candidates
         </Button>

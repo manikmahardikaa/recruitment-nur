@@ -26,7 +26,6 @@ import {
   useLocations,
 } from "@/app/hooks/location";
 import {
-  useProfileCompanyByUserId,
   useProfileCompanyByMerchantId,
   useProfileCompanys,
   useProfileCompany,
@@ -70,25 +69,6 @@ type CompanySettingFormValues = ProfileCompanyFormValues & {
   location?: LocationFormValues;
 };
 
-const EMPLOYEE_OPTIONS = [
-  { label: "1 - 10 employees", value: 10 },
-  { label: "11 - 50 employees", value: 50 },
-  { label: "51 - 200 employees", value: 200 },
-  { label: "201 - 500 employees", value: 500 },
-  { label: "500+ employees", value: 1000 },
-] as const;
-
-const INDUSTRY_OPTIONS = [
-  "Education Management",
-  "Information Technology",
-  "Hospitality",
-  "Finance",
-  "Media & Entertainment",
-  "Retail",
-  "Consulting",
-  "Manufacturing",
-] as const;
-
 const mapProfileToFormValues = (
   profile: ProfileCompanyDataModel
 ): ProfileCompanyFormValues => ({
@@ -127,16 +107,10 @@ export default function CompanySettingProfileContent({
   const { user_id } = useAuth();
   const [form] = Form.useForm<CompanySettingFormValues>();
 
-  const { data, fetchLoading } = useProfileCompanyByMerchantId({
-    id: merchantId,
-  });
-  const { data: userData, fetchLoading: userFetchLoading } =
-    useProfileCompanyByUserId({
-      id: user_id,
+  const { data: resolvedData, fetchLoading: resolvedLoading } =
+    useProfileCompanyByMerchantId({
+      id: merchantId,
     });
-  const resolvedData = merchantId ? data : userData;
-  const resolvedLoading = merchantId ? fetchLoading : userFetchLoading;
-  console.log(data);
   const { onCreate, onCreateLoading } = useProfileCompanys();
   const { onUpdate, onUpdateLoading } = useProfileCompany();
   const { data: merchantLocations = [] } = useLocationByMerchantId({
@@ -201,8 +175,7 @@ export default function CompanySettingProfileContent({
       company_name: normalizedValues.company_name,
       description: normalizedValues.description,
       total_employee: normalizedValues.total_employee,
-      user_id: user_id!,
-      merchant_id: merchantId ?? resolvedData?.merchant_id ?? null,
+      merchant_id: merchantId ?? resolvedData?.merchant_id ?? "",
       industry: normalizedValues.industry,
       website_url: normalizedValues.website_url || null,
       instagram_url: normalizedValues.instagram_url || null,
@@ -325,7 +298,7 @@ export default function CompanySettingProfileContent({
             name="company_name"
             rules={[{ required: true, message: "Company name is required" }]}
           >
-            <Input placeholder="One Step Solution Bali" size="large" />
+            <Input placeholder="Company Name" size="large" />
           </Form.Item>
         </Col>
 
@@ -340,45 +313,6 @@ export default function CompanySettingProfileContent({
             <Input.TextArea
               placeholder="What are your company's vision and mission?"
               autoSize={{ minRows: 4 }}
-            />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      <Row gutter={[24, 12]}>
-        <Col xs={24} md={12}>
-          <Form.Item
-            label="Number of Employees"
-            name="total_employee"
-            rules={[
-              { required: true, message: "Number of employees is required" },
-            ]}
-          >
-            <Select
-              placeholder="Select employee range"
-              size="large"
-              options={EMPLOYEE_OPTIONS.map((opt) => ({
-                label: opt.label,
-                value: opt.value,
-              }))}
-            />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={12}>
-          <Form.Item
-            label="Industry"
-            name="industry"
-            rules={[{ required: true, message: "Industry is required" }]}
-          >
-            <Select
-              placeholder="Select industry"
-              size="large"
-              options={INDUSTRY_OPTIONS.map((ind) => ({
-                label: ind,
-                value: ind,
-              }))}
-              showSearch
-              optionFilterProp="label"
             />
           </Form.Item>
         </Col>
@@ -519,10 +453,10 @@ export default function CompanySettingProfileContent({
   let content: ReactNode;
   if (resolvedLoading && !resolvedData) {
     content = <Skeleton active paragraph={{ rows: 8 }} />;
-  } else if (!user_id) {
+  } else if (!merchantId) {
     content = (
       <Typography.Text type="secondary">
-        Please sign in to manage your company profile.
+        Merchant tidak ditemukan. Silakan pilih merchant terlebih dahulu.
       </Typography.Text>
     );
   } else {

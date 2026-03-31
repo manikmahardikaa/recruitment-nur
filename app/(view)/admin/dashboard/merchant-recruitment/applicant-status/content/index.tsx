@@ -105,7 +105,6 @@ function ApplicantList({ merchantId }: { merchantId: string }) {
       "OFFERING",
       "HIRING",
       "REJECTED",
-      "WAITING",
     ];
 
     const values = stages.length ? stages : fallback;
@@ -145,7 +144,6 @@ function ApplicantList({ merchantId }: { merchantId: string }) {
       offering: by("OFFERING"),
       hired: by("HIRING"),
       rejected: by("REJECTED"),
-      waiting: by("WAITING"),
     };
   }, [candidatesData]);
 
@@ -161,14 +159,13 @@ function ApplicantList({ merchantId }: { merchantId: string }) {
       { key: "offering", label: "Offering", count: counts.offering },
       { key: "hired", label: "Hiring", count: counts.hired },
       { key: "rejected", label: "Rejected", count: counts.rejected },
-      { key: "waiting", label: "Waiting", count: counts.waiting },
     ]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [counts]);
 
   // columns: pass an onHistory that opens modal
   const columns = Columns({
-    onDetail: (id: string) => {},
+    onDetail: (_id: string) => {},
     onHistory: (candidateId: string) => {
       setHistoryForCandidateId(candidateId);
       setHistoryVisible(true);

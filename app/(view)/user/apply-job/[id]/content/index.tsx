@@ -23,6 +23,7 @@ import {
   // ThunderboltOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import axios from "axios";
 
 import { useJob, useReferralJob } from "@/app/hooks/job";
 import { useCandidates } from "@/app/hooks/applicant";
@@ -95,11 +96,11 @@ export default function ApplyJobContent() {
   const jobId = id ?? referralData?.job?.id;
   const isLoading = isReferral ? isReferralLoading : isJobLoading;
   const { onCreate: createApplicant, onCreateLoading: isApplying } =
-    useCandidates({});
+    useCandidates({ disableNotification: true });
 
   const overviewHTML = useMemo(
     () => sanitizeHtml(jobData?.description ?? ""),
-    [jobData?.description]
+    [jobData?.description],
   );
 
   const submitApplication = async () => {
@@ -121,11 +122,22 @@ export default function ApplyJobContent() {
       message.success("Application submitted.");
       router.push("/user/home/apply-job");
     } catch (error) {
-      if (error instanceof Error) {
-        message.error(error.message);
-      } else {
-        message.error("Failed to submit application.");
+      if (axios.isAxiosError(error)) {
+        const responseMessage =
+          (error.response?.data as { message?: string; details?: string })
+            ?.details ||
+          (error.response?.data as { message?: string; details?: string })
+            ?.message;
+        message.error(
+          responseMessage || error.message || "Failed to submit application.",
+        );
+        return;
       }
+      if (error instanceof Error) {
+        message.error(error.message || "Failed to submit application.");
+        return;
+      }
+      message.error("Failed to submit application.");
     }
   };
 
@@ -144,10 +156,6 @@ export default function ApplyJobContent() {
     {
       label: "Work Arrangement",
       value: formatLabel(jobData?.arrangement),
-    },
-    {
-      label: "Job Category",
-      value: formatLabel(jobData?.type_job),
     },
     {
       label: "Salary Range",
@@ -173,16 +181,6 @@ export default function ApplyJobContent() {
       description: "Candidates still progressing",
       value: jobData?.stats?.connected ?? 0,
     },
-    {
-      label: "New Chats",
-      description: "Recent candidate conversations",
-      value: jobData?.stats?.chatStarted ?? 0,
-    },
-    {
-      label: "Not Suitable",
-      description: "Filtered out applicants",
-      value: jobData?.stats?.notSuitable ?? 0,
-    },
   ];
 
   if (!isLoading && !jobData) {
@@ -204,8 +202,8 @@ export default function ApplyJobContent() {
       style={{
         maxWidth: 1200,
         margin: "0 auto",
-        padding: isMobile ? "16px 16px 48px" : "28px 24px 72px",
-        position: "relative",
+        padding: isMobile ? "16px 16px 32px" : "28px 24px 48px",
+        minHeight: "calc(100vh - 120px)",
       }}
     >
       <Space
@@ -258,39 +256,6 @@ export default function ApplyJobContent() {
                   />
                 )}
               </Card>
-
-              <Card
-                bordered={false}
-                style={{
-                  borderRadius: 18,
-                  background:
-                    "linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%)",
-                  color: "#E2E8F0",
-                  boxShadow: "0 18px 36px rgba(15,23,42,0.25)",
-                }}
-                bodyStyle={{ padding: 24 }}
-              >
-                <Space direction="vertical" size={16} style={{ width: "100%" }}>
-                  <Space align="center">
-                    <TeamOutlined style={{ color: "#9DB7FF", fontSize: 18 }} />
-                    <div>
-                      <Text style={{ color: "#E2E8F0" }}>
-                        Recruitment Pulse
-                      </Text>
-                      <Text style={{ display: "block", color: "#C2CEE8" }}>
-                        Latest pipeline insights
-                      </Text>
-                    </div>
-                  </Space>
-                  <Row gutter={[12, 12]}>
-                    {stats.map((stat) => (
-                      <Col xs={12} key={stat.label}>
-                        <StatCard {...stat} />
-                      </Col>
-                    ))}
-                  </Row>
-                </Space>
-              </Card>
             </Space>
           </Col>
 
@@ -314,6 +279,35 @@ export default function ApplyJobContent() {
                 {metaItems.map((item) => (
                   <MetaInfoRow key={item.label} {...item} />
                 ))}
+              </Space>
+            </Card>
+
+            <Card
+              bordered={false}
+              style={{
+                borderRadius: 18,
+                color: "#E2E8F0",
+                marginTop: "20px",
+              }}
+              bodyStyle={{ padding: 24 }}
+            >
+              <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                <Space align="center">
+                  <TeamOutlined style={{ color: "#9DB7FF", fontSize: 18 }} />
+                  <div>
+                    <Text>Recruitment Pulse</Text>
+                    <Text type="secondary" style={{ display: "block" }}>
+                      Latest pipeline insights
+                    </Text>
+                  </div>
+                </Space>
+                <Row gutter={[12, 12]}>
+                  {stats.map((stat) => (
+                    <Col xs={12} key={stat.label}>
+                      <StatCard {...stat} />
+                    </Col>
+                  ))}
+                </Row>
               </Space>
             </Card>
           </Col>
@@ -443,12 +437,8 @@ function StatCard({ label, value, description }: StatItem) {
       <Text style={{ fontSize: 28, fontWeight: 700, display: "block" }}>
         {value}
       </Text>
-      <Text style={{ display: "block", color: "#F8FAFC", fontWeight: 600 }}>
-        {label}
-      </Text>
-      <Text style={{ color: "#CBD5F5", fontSize: 12, lineHeight: 1.4 }}>
-        {description}
-      </Text>
+      <Text style={{ display: "block", fontWeight: 600 }}>{label}</Text>
+      <Text style={{ fontSize: 12, lineHeight: 1.4 }}>{description}</Text>
     </Card>
   );
 }
@@ -474,8 +464,7 @@ function HeroCard({
       bordered={false}
       style={{
         borderRadius: 24,
-        background:
-          "linear-gradient(135deg, #1d2760 0%, #1f4ed8 100%)",
+        background: "linear-gradient(135deg, #1d2760 0%, #1f4ed8 100%)",
         color: "white",
         boxShadow: "0 24px 48px rgba(29, 78, 216, 0.25)",
         border: "1px solid rgba(255, 255, 255, 0.08)",
@@ -533,8 +522,8 @@ function HeroCard({
             {jobName ?? "Job Title"}
           </Title>
           <Text style={{ color: "rgba(226,232,240,0.85)" }}>
-            Showcase your experience and demonstrate why you are the right fit for
-            this opportunity.
+            Showcase your experience and demonstrate why you are the right fit
+            for this opportunity.
           </Text>
           {/* <Button
             type="primary"

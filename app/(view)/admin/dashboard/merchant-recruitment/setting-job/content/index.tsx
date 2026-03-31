@@ -79,6 +79,9 @@ export default function SettingJobContent() {
   const handleFinish = async (values: JobDataModel) => {
     try {
       const payload = buildJobPayload(values);
+      if (merchantId) {
+        (payload as JobPayloadUpdateModel).merchant_id = merchantId;
+      }
 
       if (modalType === "create") {
         await jobCreate(payload);

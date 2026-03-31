@@ -64,7 +64,6 @@ const CHART_STAGE_ORDER = [
   "OFFERING",
   "HIRING",
   "REJECTED",
-  "WAITING",
 ] as const;
 
 const STAGE_FILTER_OPTIONS = [
@@ -75,7 +74,6 @@ const STAGE_FILTER_OPTIONS = [
   { value: "OFFERING", label: getStageLabel("OFFERING") },
   { value: "HIRING", label: getStageLabel("HIRING") },
   { value: "REJECTED", label: getStageLabel("REJECTED") },
-  { value: "WAITING", label: getStageLabel("WAITING") },
 ];
 
 type LiveValues = {

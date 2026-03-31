@@ -1,21 +1,4 @@
 import { MenuProps } from "antd";
-import { useRouter } from "next/navigation";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBriefcase,
-  faLocationDot,
-  faFileContract,
-  faClipboardCheck,
-  faUserGroup,
-  faCalendarCheck,
-  faTable,
-  faClipboardList,
-  faCircleQuestion,
-  faBookOpen,
-  faFileLines,
-  faGear,
-} from "@fortawesome/free-solid-svg-icons";
-import menuLabel from "@/app/utils/label";
 
 type MenuItems = NonNullable<MenuProps["items"]>;
 
@@ -74,15 +57,13 @@ const filterMenuItems = (
 export const SidebarMenuSettingAdmin = (
   role?: AdminRole
 ): MenuProps["items"] => {
-  const router = useRouter();
-
   const sidebarMenu: MenuProps["items"] = [
-    {
-      key: "/admin/dashboard/user-management",
-      label: menuLabel("User Management"),
-      icon: <FontAwesomeIcon icon={faUserGroup} />,
-      onClick: () => router.push("/admin/dashboard/user-management"),
-    },
+    // {
+    //   key: "/admin/dashboard/user-management",
+    //   label: menuLabel("User Management"),
+    //   icon: <FontAwesomeIcon icon={faUserGroup} />,
+    //   onClick: () => router.push("/admin/dashboard/user-management"),
+    // },
     // {
     //   key: "/admin/dashboard/merchant-recruitment/setting-job",
     //   label: menuLabel("Setting Job"),

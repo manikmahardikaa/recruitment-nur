@@ -46,7 +46,6 @@ const STAGE_MAP: Record<string, RecruitmentStage | undefined> = {
   hired: toRecruitmentStage("HIRING"),
   hiring: toRecruitmentStage("HIRING"),
   rejected: toRecruitmentStage("REJECTED"),
-  waiting: toRecruitmentStage("WAITING"),
 };
 
 export default function CandidatesPage() {

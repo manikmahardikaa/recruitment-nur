@@ -14,17 +14,13 @@ import {
   Empty,
   Tag,
   Tooltip,
-  message,
 } from "antd";
 import {
   VideoCameraOutlined,
   BankOutlined,
-  CheckOutlined,
   CalendarOutlined,
-  EditOutlined,
   DeleteOutlined,
   EyeOutlined,
-  LinkOutlined,
 } from "@ant-design/icons";
 import { formatDate, formatTime } from "@/app/utils/date-helper";
 import NoteInterviewModal from "@/app/components/common/modal/admin/note-interview";
@@ -34,12 +30,6 @@ import {
   useNoteInterviews,
 } from "@/app/hooks/note-interview";
 
-import EvaluationAssignmentModal from "@/app/components/common/modal/admin/evaluation-assignment";
-import { EvaluatorAssignmentDataModel } from "@/app/models/evaluator-assignment";
-import {
-  useEvaluatorAssignment,
-  useEvaluatorAssignments,
-} from "@/app/hooks/evaluatorAssignment";
 import Link from "next/link";
 
 const { Title, Text } = Typography;
@@ -50,15 +40,6 @@ const truncateWords = (t = "", max = 40) =>
   (t || "").trim().split(/\s+/).length <= max
     ? t
     : t.trim().split(/\s+/).slice(0, max).join(" ") + "…";
-
-const statusColor = (s: string) =>
-  s === "SUBMITTED"
-    ? "green"
-    : s === "IN_PROGRESS"
-    ? "blue"
-    : s === "CANCELLED"
-    ? "red"
-    : "gold"; // PENDING
 
 type Schedule = {
   id: string;
@@ -118,27 +99,6 @@ export default function ScheduleTimeline({
   );
   const [deletingNoteId, setDeletingNoteId] = useState<string | null>(null);
 
-  const copyLink = async (url: string) => {
-    try {
-      if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-      } else {
-        // Fallback untuk browser/HTTP non-secure
-        const ta = document.createElement("textarea");
-        ta.value = url;
-        ta.style.position = "fixed";
-        ta.style.left = "-9999px";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-      }
-      message.success("Link copied to clipboard");
-    } catch (e: any) {
-      message.error(e?.message || "Failed to copy link");
-    }
-  };
-
   const openCreateNote = () => {
     setSelectedNote(null);
     setNoteModalType("create");
@@ -180,70 +140,6 @@ export default function ScheduleTimeline({
 
   const renderCreatedAt = (d: string | Date) =>
     `${formatDate(d)} • ${formatTime(d)}`;
-
-  /* ===================== Evaluation Assignments ===================== */
-  const {
-    data: evaluationList,
-    onCreate: onCreateEvaluationAssignment,
-    onCreateLoading: loadingCreateEvaluationAssignment,
-  } = useEvaluatorAssignments({ queryString: `applicant_id=${applicant_id}` });
-
-  const [isOpenModalEvaluation, setIsOpenModalEvaluation] = useState(false);
-  const [evaluationModalType, setEvaluationModalType] = useState<
-    "create" | "update"
-  >("create");
-  const [selectedAssignment, setSelectedAssignment] =
-    useState<EvaluatorAssignmentDataModel | null>(null);
-
-  const {
-    onUpdate: onUpdateEvaluationAssignment,
-    onUpdateLoading: loadingUpdateEvaluationAssignment,
-  } = useEvaluatorAssignment({ id: selectedAssignment?.id || "" });
-
-  const openCreateEvaluation = () => {
-    setSelectedAssignment(null);
-    setEvaluationModalType("create");
-    setIsOpenModalEvaluation(true);
-  };
-  const openEditEvaluation = (assignment: EvaluatorAssignmentDataModel) => {
-    setSelectedAssignment(assignment);
-    setEvaluationModalType("update");
-    setIsOpenModalEvaluation(true);
-  };
-  const closeEvaluationModal = () => {
-    setIsOpenModalEvaluation(false);
-    setSelectedAssignment(null);
-    setEvaluationModalType("create");
-  };
-
-  const handleFinishEvaluationAssignment = async (
-    values: EvaluatorAssignmentDataModel | any
-  ) => {
-    if (evaluationModalType === "create") {
-      // create: pecah evaluator_ids[] jadi banyak row
-      const payloadCreate = {
-        applicant_id,
-        base_matriks_id: values.base_matriks_id,
-        evaluator_ids: values.evaluator_ids, // array of string
-        link_url: values.link_url ?? null,
-      };
-      await onCreateEvaluationAssignment(payloadCreate as any);
-    } else if (selectedAssignment?.id) {
-      // update: satu row
-      const payloadUpdate = {
-        base_matriks_id: values.base_matriks_id,
-        evaluatorId: values.evaluatorId,
-        status: values.status,
-        link_url: values.link_url ?? null,
-      };
-      await onUpdateEvaluationAssignment({
-        id: selectedAssignment.id,
-        payload: payloadUpdate as any,
-      });
-    }
-
-    closeEvaluationModal();
-  };
 
   /* ============================ UI ============================ */
   return (
@@ -475,94 +371,6 @@ export default function ScheduleTimeline({
                   </Button>
                 </Space>
 
-                <Divider />
-
-                {/* ===== Evaluator Assignments ===== */}
-                <Space
-                  style={{ width: "100%", justifyContent: "space-between" }}
-                >
-                  <Text strong>Evaluator Assignments</Text>
-                  <Button
-                    icon={<CheckOutlined />}
-                    onClick={openCreateEvaluation}
-                  >
-                    Assign Evaluation
-                  </Button>
-                </Space>
-
-                <Space
-                  direction="vertical"
-                  size={10}
-                  style={{ width: "100%", marginTop: 12 }}
-                >
-                  {Array.isArray(evaluationList) &&
-                  evaluationList.length > 0 ? (
-                    evaluationList.map((ea) => (
-                      <Card
-                        key={ea.id}
-                        size="small"
-                        style={{
-                          borderRadius: 12,
-                          background: "#fff",
-                          border: "1px solid #eef0fc",
-                        }}
-                        bodyStyle={{ padding: 12 }}
-                      >
-                        <Space
-                          direction="vertical"
-                          size={4}
-                          style={{ width: "100%" }}
-                        >
-                          <Space
-                            wrap
-                            align="center"
-                            style={{
-                              justifyContent: "space-between",
-                              width: "100%",
-                            }}
-                          >
-                            <Space wrap>
-                              <Text strong>{ea.evaluator?.name ?? "—"}</Text>
-                              <Tag color={statusColor(ea.status)}>
-                                {ea.status}
-                              </Tag>
-                            </Space>
-                            <Space>
-                              {ea.link_url && (
-                                <Tooltip title="Copy link">
-                                  <Button
-                                    size="small"
-                                    icon={<LinkOutlined />}
-                                    onClick={() => copyLink(ea.link_url!)}
-                                  />
-                                </Tooltip>
-                              )}
-                              <Tooltip title="Edit">
-                                <Button
-                                  size="small"
-                                  icon={<EditOutlined />}
-                                  onClick={() => openEditEvaluation(ea)}
-                                />
-                              </Tooltip>
-                            </Space>
-                          </Space>
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            Base: {ea.baseMatriks?.name ?? ea.base_matriks_id}
-                          </Text>
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            Assigned: {formatDate(ea.assignedAt)} •{" "}
-                            {formatTime(ea.assignedAt)}
-                          </Text>
-                        </Space>
-                      </Card>
-                    ))
-                  ) : (
-                    <Empty
-                      description="No evaluator assignments yet"
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    />
-                  )}
-                </Space>
               </Card>
             ),
           };
@@ -631,26 +439,6 @@ export default function ScheduleTimeline({
         )}
       </Modal>
 
-      {/* Modal Assign Evaluation */}
-      <EvaluationAssignmentModal
-        open={isOpenModalEvaluation}
-        onClose={closeEvaluationModal}
-        handleFinish={handleFinishEvaluationAssignment}
-        loadingCreate={loadingCreateEvaluationAssignment}
-        loadingUpdate={loadingUpdateEvaluationAssignment}
-        type={evaluationModalType}
-        applicantId={applicant_id}
-        initialValues={
-          selectedAssignment
-            ? {
-                base_matriks_id: (selectedAssignment as any).base_matriks_id,
-                evaluatorId: (selectedAssignment as any).evaluatorId,
-                status: (selectedAssignment as any).status,
-                link_url: (selectedAssignment as any).link_url ?? "",
-              }
-            : undefined
-        }
-      />
     </div>
   );
 }

@@ -75,7 +75,7 @@ export default function ListMerchantComponent() {
       form.resetFields();
       setSelectedMerchant(null);
       setModalType("create");
-    } catch (error) {
+    } catch {
       message.error("Failed to save merchant.");
     }
   };

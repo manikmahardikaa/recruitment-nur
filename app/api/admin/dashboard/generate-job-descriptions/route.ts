@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { generateJobDescription } from "@/app/vendor/generate-job-descriptions";
 import { JobDescriptionPayload } from "@/app/models/job-description-payload";
-import { GET_PROFILE_COMPANY_USER_ID } from "@/app/providers/profile-company";
+import { GET_PROFILE_COMPANY_MERCHANT_ID } from "@/app/providers/profile-company";
 import { GET_LOCATION } from "@/app/providers/location";
 
 type RequestBody = {
@@ -13,7 +13,7 @@ type RequestBody = {
   skills?: string[];
   perks?: string[];
   tone?: JobDescriptionPayload["tone"];
-  user_id?: string;
+  merchant_id?: string;
 };
 
 export async function POST(req: Request) {
@@ -27,11 +27,13 @@ export async function POST(req: Request) {
       skills = [],
       perks = [],
       tone,
-      user_id,
+      merchant_id,
     }: RequestBody = await req.json();
 
     const [company, location] = await Promise.all([
-      user_id ? GET_PROFILE_COMPANY_USER_ID(user_id) : Promise.resolve(null),
+      merchant_id
+        ? GET_PROFILE_COMPANY_MERCHANT_ID(merchant_id)
+        : Promise.resolve(null),
       location_id ? GET_LOCATION(location_id) : Promise.resolve(null),
     ]);
 

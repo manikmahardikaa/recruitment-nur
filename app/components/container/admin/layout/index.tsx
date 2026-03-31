@@ -1,23 +1,10 @@
 "use client";
 
-import {
-  Avatar,
-  Badge,
-  Button,
-  Dropdown,
-  Layout,
-  Menu,
-  Typography,
-} from "antd";
-import type { MenuProps } from "antd";
+import { Avatar, Dropdown, Layout, Menu, Typography } from "antd";
 import { MainBreadcrumb } from "@/app/components/common/breadcrumb";
 import { LogoutOutlined } from "@ant-design/icons";
 import getInitials from "@/app/utils/initials-username";
 import { SiderAdmin } from "../sider/admin";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell } from "@fortawesome/free-solid-svg-icons";
-import { useChatUnread } from "@/app/hooks/chat";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/utils/useAuth";
 import { normalizedRole } from "@/app/utils/normalized";
 import { signOut } from "next-auth/react";
@@ -70,54 +57,7 @@ export default function AdminLayout({
   username: string;
   userProfilePic?: string;
 }) {
-  const { unreadCount, conversations, isFetching } = useChatUnread();
   const { role } = useAuth();
-
-  const notificationItems: MenuProps["items"] =
-    conversations.length > 0
-      ? conversations.map((item) => {
-          const title =
-            item.conversation?.applicant?.user?.name ??
-            item.conversation?.title ??
-            "Percakapan";
-          const updatedAt = item.conversation?.updatedAt
-            ? new Date(item.conversation.updatedAt).toLocaleString()
-            : "";
-          return {
-            key: item.conversationId,
-            label: (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                  maxWidth: 280,
-                }}
-              >
-                <div style={{ fontWeight: 600 }}>{title}</div>
-                <div style={{ fontSize: 12, color: "#8c8c8c" }}>
-                  {item.unreadCount} messages unread
-                </div>
-                {updatedAt && (
-                  <div style={{ fontSize: 11, color: "#bfbfbf" }}>
-                    {updatedAt}
-                  </div>
-                )}
-              </div>
-            ),
-          };
-        })
-      : [
-          {
-            key: "empty",
-            disabled: true,
-            label: (
-              <div style={{ padding: "8px 12px", fontSize: 13, color: "#999" }}>
-                No new messages
-              </div>
-            ),
-          },
-        ];
 
   return (
     <Layout style={{ minHeight: "100vh" }}>

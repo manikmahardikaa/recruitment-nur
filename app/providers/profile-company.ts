@@ -4,15 +4,6 @@ import {
   ProfileCompanyPayloadUpdateModel,
 } from "../models/profile-company";
 
-export const GET_PROFILE_COMPANY_USER_ID = async (id: string) => {
-  const result = await db.profileCompany.findFirst({
-    where: {
-      user_id: id,
-    },
-  });
-  return result;
-};
-
 export const GET_PROFILE_COMPANY_MERCHANT_ID = async (id: string) => {
   const result = await db.profileCompany.findFirst({
     where: {

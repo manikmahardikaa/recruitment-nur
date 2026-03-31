@@ -1,11 +1,14 @@
 .wrapper {
-  --auth-bg: #f6f9fc;
-  --auth-primary: #0a3848;
-  --auth-secondary: #0b7d95;
-  --auth-muted: #5c667a;
+  --auth-bg: #f5f2eb;
+  --auth-primary: #0b1f3b;
+  --auth-secondary: #c48a2a;
+  --auth-accent: #1f7a8c;
+  --auth-muted: #5f6676;
   min-height: 100vh;
-  background: radial-gradient(circle at top left, rgba(10, 56, 72, 0.25), transparent 50%),
-    radial-gradient(circle at bottom right, rgba(11, 125, 149, 0.18), transparent 55%),
+  background:
+    radial-gradient(circle at 10% 20%, rgba(196, 138, 42, 0.25), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(31, 122, 140, 0.2), transparent 40%),
+    radial-gradient(circle at 80% 85%, rgba(11, 31, 59, 0.22), transparent 48%),
     var(--auth-bg);
   padding: clamp(40px, 6vw, 96px) clamp(24px, 7vw, 120px);
   position: relative;
@@ -25,7 +28,7 @@
 .glowPrimary {
   width: 420px;
   height: 420px;
-  background: rgba(10, 56, 72, 0.5);
+  background: rgba(196, 138, 42, 0.55);
   top: -160px;
   left: -120px;
 }
@@ -33,7 +36,7 @@
 .glowSecondary {
   width: 360px;
   height: 360px;
-  background: rgba(11, 125, 149, 0.45);
+  background: rgba(31, 122, 140, 0.45);
   bottom: -140px;
   right: -80px;
 }
@@ -69,20 +72,20 @@
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 250, 242, 0.9);
+  border: 1px solid rgba(196, 138, 42, 0.25);
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
   color: var(--auth-primary);
-  box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 40px rgba(11, 31, 59, 0.08);
 }
 
 .title {
   font-size: clamp(32px, 4vw, 54px);
   line-height: 1.15;
   margin: clamp(16px, 3vw, 32px) 0 16px;
-  color: #041424;
+  color: #0b1f3b;
   font-weight: 700;
 }
 
@@ -107,11 +110,11 @@
 }
 
 .highlightItem {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   border-radius: 22px;
   padding: 20px;
-  box-shadow: 0 30px 65px rgba(15, 23, 42, 0.12);
-  border: 1px solid rgba(10, 56, 72, 0.08);
+  box-shadow: 0 30px 65px rgba(11, 31, 59, 0.12);
+  border: 1px solid rgba(196, 138, 42, 0.15);
 }
 
 .statValue {
@@ -130,9 +133,9 @@
   margin-top: clamp(24px, 3vw, 40px);
   padding: 26px;
   border-radius: 28px;
-  background: linear-gradient(135deg, #082437, #0f4e5c);
+  background: linear-gradient(135deg, #0b1f3b, #1b4b5a);
   color: #fff;
-  box-shadow: 0 35px 75px rgba(4, 20, 36, 0.35);
+  box-shadow: 0 35px 75px rgba(11, 31, 59, 0.35);
   display: flex;
   align-items: center;
   gap: 20px;
@@ -163,11 +166,11 @@
 }
 
 .formCard {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.97);
   border-radius: 32px;
   padding: clamp(32px, 3vw, 48px);
-  box-shadow: 0 45px 95px rgba(15, 23, 42, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 45px 95px rgba(11, 31, 59, 0.18);
+  border: 1px solid rgba(196, 138, 42, 0.18);
   backdrop-filter: blur(10px);
   height: 100%;
   max-width: 460px;
@@ -185,7 +188,7 @@
 .formHeaderTitle {
   font-size: 28px;
   margin-bottom: 8px;
-  color: #041424;
+  color: #0b1f3b;
   font-weight: 600;
 }
 
@@ -203,7 +206,7 @@
 
 .formFooter a {
   margin-left: 6px;
-  color: var(--auth-secondary);
+  color: var(--auth-accent);
   font-weight: 600;
 }
 

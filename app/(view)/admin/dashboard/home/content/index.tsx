@@ -1,18 +1,11 @@
 "use client";
 
-import {
-  AuditOutlined,
-  CheckCircleOutlined,
-  FileSearchOutlined,
-  ScheduleOutlined,
-  TeamOutlined,
-} from "@ant-design/icons";
+import { FileSearchOutlined, ShopOutlined, TeamOutlined } from "@ant-design/icons";
 import {
   Card,
   Col,
   Empty,
   List,
-  Modal,
   Progress,
   Row,
   Skeleton,
@@ -25,16 +18,16 @@ import {
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { useCandidates } from "@/app/hooks/applicant";
 import { useJobs } from "@/app/hooks/job";
+import { useMerchants } from "@/app/hooks/merchant";
 import {
   SUMMARY_STAGE_CONFIG,
   SummaryStageKey,
   stageMatches,
 } from "@/app/utils/recruitment-stage";
-import { useOfferingContractCountByJobType } from "@/app/hooks/offering-contract";
 
 dayjs.extend(relativeTime);
 dayjs.extend(customParseFormat);
@@ -66,30 +59,8 @@ export default function DashboardContent() {
   const { data: jobs, fetchLoading: jobsLoading } = useJobs({
     queryString: "",
   });
-  const loading = candidatesLoading || jobsLoading;
-
-  const [offerModalOpen, setOfferModalOpen] = useState(false);
-
-  const {
-    data: offeringContractCountByJobType,
-    fetchLoading: offeringContractLoading,
-  } = useOfferingContractCountByJobType();
-
-  const offeringContractsTotal = useMemo(() => {
-    return (
-      offeringContractCountByJobType?.reduce(
-        (total, item) => total + item.count,
-        0
-      ) ?? 0
-    );
-  }, [offeringContractCountByJobType]);
-
-  const offeringContractRows = useMemo(() => {
-    return (offeringContractCountByJobType ?? []).map((item) => ({
-      key: item.jobType,
-      ...item,
-    }));
-  }, [offeringContractCountByJobType]);
+  const { data: merchants, fetchLoading: merchantsLoading } = useMerchants();
+  const loading = candidatesLoading || jobsLoading || merchantsLoading;
 
   const stageSummary = useMemo<StageSummary>(() => {
     const base = SUMMARY_STAGE_CONFIG.reduce((acc, curr) => {
@@ -125,10 +96,6 @@ export default function DashboardContent() {
     ).length;
   }, [jobs]);
 
-  const conversionRate = totalApplicants
-    ? Math.round(((stageSummary.hired ?? 0) / totalApplicants) * 100)
-    : 0;
-
   const topJobs = useMemo(() => {
     if (!candidates || !jobs) return [];
     const counts = new Map<
@@ -136,6 +103,7 @@ export default function DashboardContent() {
       {
         id: string;
         name: string;
+        merchantName: string;
         applicants: number;
         isPublished: boolean;
       }
@@ -147,15 +115,20 @@ export default function DashboardContent() {
       const jobFromList = jobsById.get(jobId);
       const jobName =
         candidate.job?.job_title ?? jobFromList?.job_title ?? "Unassigned";
+      const merchantName = candidate.merchant?.name ?? "—";
       const published =
         candidate.job?.is_published ?? jobFromList?.is_published ?? false;
       const current = counts.get(jobId) ?? {
         id: jobId,
         name: jobName,
+        merchantName,
         applicants: 0,
         isPublished: published,
       };
       current.applicants += 1;
+      if (!current.merchantName || current.merchantName === "—") {
+        current.merchantName = merchantName;
+      }
       counts.set(jobId, current);
     });
 
@@ -163,6 +136,7 @@ export default function DashboardContent() {
       return jobs.slice(0, 5).map((job) => ({
         id: job.id,
         name: job.job_title,
+        merchantName: job.merchant?.name ?? "—",
         applicants: 0,
         isPublished: job.is_published,
       }));
@@ -182,38 +156,6 @@ export default function DashboardContent() {
       .slice(0, 6);
   }, [candidates]);
 
-  const upcomingInterviews = useMemo(() => {
-    if (!candidates) return [];
-    const now = dayjs();
-    const entries: {
-      id: string;
-      name: string;
-      job: string;
-      date: dayjs.Dayjs;
-      isOnline: boolean;
-    }[] = [];
-
-    candidates.forEach((candidate) => {
-      candidate.scheduleInterview?.forEach((schedule) => {
-        if (!schedule?.start_time) return;
-        const start = dayjs(schedule.start_time);
-        if (start.isAfter(now)) {
-          entries.push({
-            id: schedule.id,
-            name: candidate.user?.name ?? "Candidate",
-            job: candidate.job?.job_title ?? "Role",
-            date: start,
-            isOnline: Boolean(schedule.is_online),
-          });
-        }
-      });
-    });
-
-    return entries
-      .sort((a, b) => a.date.valueOf() - b.date.valueOf())
-      .slice(0, 5);
-  }, [candidates]);
-
   const summaryCards = [
     {
       key: "applicants",
@@ -224,31 +166,12 @@ export default function DashboardContent() {
       color: "#1677ff",
     },
     {
-      key: "interview",
-      title: "Interviews",
-      value: stageSummary.interview ?? 0,
-      helper: `${stageSummary.screening ?? 0} still screening`,
-      icon: <ScheduleOutlined />,
-      color: "#fa8c16",
-    },
-    {
-      key: "offering",
-      title: "Offers Sent",
-      value: offeringContractsTotal,
-      helper: `${stageSummary.hired ?? 0} accepted`,
-      icon: <AuditOutlined />,
-      color: "#722ed1",
-      loading: offeringContractLoading,
-      // onMouseEnter: () => setOfferModalOpen(true),
-      onClick: () => setOfferModalOpen(true),
-    },
-    {
-      key: "hired",
-      title: "Conversion Rate",
-      value: `${conversionRate}%`,
-      helper: `${stageSummary.hired ?? 0} hires`,
-      icon: <CheckCircleOutlined />,
-      color: "#52c41a",
+      key: "merchants",
+      title: "Total Merchant",
+      value: merchants?.length ?? 0,
+      helper: "Active recruiting partners",
+      icon: <ShopOutlined />,
+      color: "#10b981",
     },
   ];
 
@@ -368,8 +291,13 @@ export default function DashboardContent() {
                 />
                 <Table
                   size="small"
-                  pagination={false}
+                  pagination={{ pageSize: 5 }}
                   columns={[
+                    {
+                      title: "Merchant",
+                      dataIndex: "merchantName",
+                      key: "merchantName",
+                    },
                     { title: "Position", dataIndex: "name", key: "name" },
                     {
                       title: "Applicants",
@@ -402,42 +330,6 @@ export default function DashboardContent() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} xl={12}>
-          <Card title="Upcoming interviews">
-            {loading ? (
-              <Skeleton active paragraph={{ rows: 4 }} />
-            ) : upcomingInterviews.length ? (
-              <List
-                itemLayout="horizontal"
-                dataSource={upcomingInterviews}
-                renderItem={(item) => (
-                  <List.Item key={item.id}>
-                    <List.Item.Meta
-                      title={
-                        <Space>
-                          <Text strong>{item.name}</Text>
-                          <Tag color="blue">{item.job}</Tag>
-                        </Space>
-                      }
-                      description={
-                        <Space size="middle">
-                          <Text>
-                            {item.date.format("ddd, DD MMM HH:mm")} WITA
-                          </Text>
-                          <Tag color={item.isOnline ? "cyan" : "orange"}>
-                            {item.isOnline ? "Online" : "Onsite"}
-                          </Tag>
-                        </Space>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
-            ) : (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-            )}
-          </Card>
-        </Col>
-        <Col xs={24} xl={12}>
           <Card title="Latest applicants">
             {loading ? (
               <Skeleton active paragraph={{ rows: 4 }} />
@@ -445,23 +337,31 @@ export default function DashboardContent() {
               <List
                 itemLayout="horizontal"
                 dataSource={latestCandidates}
+                pagination={{ pageSize: 5 }}
                 renderItem={(candidate) => (
                   <List.Item key={candidate.id}>
                     <List.Item.Meta
                       title={
-                        <Space>
-                          <Text strong>
+                        <Space size={10} wrap>
+                          <Text strong style={{ fontSize: 16 }}>
                             {candidate.user?.name ?? "Candidate"}
                           </Text>
-                          <Tag>{candidate.job?.job_title ?? "—"}</Tag>
+                          <Tag color="blue">
+                            {candidate.job?.job_title ?? "—"}
+                          </Tag>
+                          <Tag color="geekblue">
+                            {candidate.merchant?.name ??
+                              candidate?.merchant?.name ??
+                              "—"}
+                          </Tag>
                         </Space>
                       }
                       description={
-                        <Space size="middle">
+                        <Space size={12} wrap>
                           <Text type="secondary">
                             {dayjs(candidate.createdAt).fromNow()}
                           </Text>
-                          <Tag color="processing">
+                          <Tag color="processing" style={{ borderRadius: 999 }}>
                             {candidate.stage ?? "APPLICATION"}
                           </Tag>
                         </Space>
@@ -475,44 +375,41 @@ export default function DashboardContent() {
             )}
           </Card>
         </Col>
+        <Col xs={24} xl={12}>
+          <Card title="Applicants by Merchant">
+            {loading ? (
+              <Skeleton active paragraph={{ rows: 4 }} />
+            ) : merchants?.length ? (
+              <Table
+                size="small"
+                pagination={{ pageSize: 6 }}
+                rowKey={(row) => row.id}
+                columns={[
+                  { title: "Merchant", dataIndex: "name", key: "name" },
+                  {
+                    title: "Jobs",
+                    dataIndex: "_count",
+                    key: "jobs",
+                    width: 100,
+                    render: (value) => value?.jobs ?? 0,
+                  },
+                  {
+                    title: "Applicants",
+                    dataIndex: "_count",
+                    key: "applicants",
+                    width: 120,
+                    render: (value) => value?.applicants ?? 0,
+                  },
+                ]}
+                dataSource={merchants}
+                locale={{ emptyText: "No merchant data yet" }}
+              />
+            ) : (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            )}
+          </Card>
+        </Col>
       </Row>
-
-      <Modal
-        title="Offers Sent"
-        open={offerModalOpen}
-        onCancel={() => setOfferModalOpen(false)}
-        footer={null}
-        width={800}
-      >
-        {offeringContractLoading ? (
-          <Skeleton active paragraph={{ rows: 6 }} />
-        ) : offeringContractRows.length ? (
-          <Table
-            size="small"
-            pagination={{ pageSize: 8 }}
-            rowKey={(r) => r.jobType}
-            columns={[
-              {
-                title: "Job Type",
-                dataIndex: "jobType",
-                render: (value) => (
-                  <Tag color={value === "REFFERAL" ? "purple" : "gold"}>
-                    {value === "REFFERAL" ? "Referral" : "Team Member"}
-                  </Tag>
-                ),
-              },
-              {
-                title: "Offers",
-                dataIndex: "count",
-                width: 120,
-              },
-            ]}
-            dataSource={offeringContractRows}
-          />
-        ) : (
-          <Empty description="No offering contracts yet" />
-        )}
-      </Modal>
     </Space>
   );
 }

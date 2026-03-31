@@ -556,9 +556,17 @@ export default function CreateJobUI({
   }, [draftId, draftJob, draftLoading, persistDraftId, isEditMode]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [aiFailed, setAiFailed] = useState(false);
+  const [showManualDescription, setShowManualDescription] = useState(false);
 
   const handleFinish = useCallback(
     async (values: any) => {
+      const resolvedMerchantId =
+        merchantId ?? (draftJob as JobDataModel | null)?.merchant_id ?? null;
+      if (!resolvedMerchantId && !isEditMode) {
+        message.error("Merchant tidak ditemukan. Mohon pilih merchant dulu.");
+        return;
+      }
       try {
         if (!isEditMode && !user_id) {
           message.error(
@@ -616,6 +624,7 @@ export default function CreateJobUI({
       form,
       isEditMode,
       merchantId,
+      draftJob,
       user_id,
     ]
   );
@@ -643,13 +652,14 @@ export default function CreateJobUI({
 
     setIsGeneratingDescription(true);
     try {
+      setAiFailed(false);
       const { data } = await axios.post(
         "/api/admin/dashboard/generate-job-descriptions",
         {
           jobTitle,
           jobRole,
           location_id: null,
-          user_id,
+          merchant_id: merchantId ?? null,
           responsibilities: splitTextArea(responsibilitiesInput),
           requirements: splitTextArea(requirementsInput),
           skills: Array.isArray(skillsInput) ? skillsInput : [],
@@ -666,6 +676,8 @@ export default function CreateJobUI({
     } catch (error) {
       console.error("Error generating job description:", error);
       message.error("Gagal membuat job description.");
+      setAiFailed(true);
+      setShowManualDescription(true);
     } finally {
       setIsGeneratingDescription(false);
     }
@@ -1184,13 +1196,15 @@ export default function CreateJobUI({
                 <Title level={4} style={{ marginBottom: 4 }}>
                   Job Description
                 </Title>
-                <Button
-                  type="primary"
-                  onClick={handleGenerateJobDescription}
-                  loading={isGeneratingDescription}
-                >
-                  Generate with AI
-                </Button>
+                <Space>
+                  <Button
+                    type="primary"
+                    onClick={handleGenerateJobDescription}
+                    loading={isGeneratingDescription}
+                  >
+                    Generate with AI
+                  </Button>
+                </Space>
               </Flex>
               <Paragraph type="secondary" style={{ marginBottom: 24 }}>
                 Describe key responsibilities, outcomes, and expectations for
@@ -1198,6 +1212,16 @@ export default function CreateJobUI({
               </Paragraph>
 
               <Divider />
+
+              {aiFailed && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+                  message="AI generator sedang tidak tersedia."
+                  description="Silakan isi deskripsi secara manual di bawah."
+                />
+              )}
 
               <Form.Item
                 label={<Typography.Text strong>Job Summary</Typography.Text>}
@@ -1209,6 +1233,33 @@ export default function CreateJobUI({
                   placeholder="Short overview of the role"
                 />
               </Form.Item>
+
+              {showManualDescription && (
+                <>
+                  <Form.Item
+                    label={
+                      <Typography.Text strong>Responsibilities</Typography.Text>
+                    }
+                    name={["description", "responsibilities"]}
+                  >
+                    <Input.TextArea
+                      rows={6}
+                      placeholder="List responsibilities (one per line)"
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label={
+                      <Typography.Text strong>Nice to Have</Typography.Text>
+                    }
+                    name={["description", "nice_to_have"]}
+                  >
+                    <Input.TextArea
+                      rows={5}
+                      placeholder="Optional skills/requirements (one per line)"
+                    />
+                  </Form.Item>
+                </>
+              )}
             </Card>
           </>
         )}

@@ -16,8 +16,7 @@ function sanitizeFileName(name: string) {
 }
 
 export async function uploadChatFiles(
-  files: File[],
-  options?: { folder?: string }
+  files: File[]
 ): Promise<UploadedChatAttachment[]> {
   if (!files.length) return [];
 

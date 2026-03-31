@@ -12,7 +12,13 @@ const baseUrl = "/api/admin/dashboard/applicant";
 const entity = "applicant";
 const queryKey = "applicants";
 
-export const useCandidates = ({ queryString }: { queryString?: string }) => {
+export const useCandidates = ({
+  queryString,
+  disableNotification,
+}: {
+  queryString?: string;
+  disableNotification?: boolean;
+}) => {
   const queryClient = useQueryClient();
 
   const { data, isLoading: fetchLoading } = useQuery({
@@ -29,9 +35,25 @@ export const useCandidates = ({ queryString }: { queryString?: string }) => {
       axios.post(baseUrl, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
-      MainNotification({ type: "success", entity, action: "created" });
+      if (!disableNotification) {
+        MainNotification({ type: "success", entity, action: "created" });
+      }
     },
-    onError: () => {
+    onError: (error) => {
+      if (disableNotification) return;
+      if (axios.isAxiosError(error)) {
+        const data = error.response?.data as
+          | { details?: string; message?: string }
+          | undefined;
+        const details = data?.details || data?.message;
+        MainNotification({
+          type: "error",
+          entity,
+          action: "created",
+          description: details,
+        });
+        return;
+      }
       MainNotification({ type: "error", entity, action: "created" });
     },
   });

@@ -85,13 +85,13 @@ export const GET = async (req: NextRequest) => {
       );
     }
 
-    // return NextResponse.json(
-    //   {
-    //     success: false,
-    //     message: "Failed to get data",
-    //     error: error instanceof Error ? error.message : "Internal server error",
-    //   },
-    //   { status: 500 }
-    // );
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Failed to get data",
+        error: error instanceof Error ? error.message : "Internal server error",
+      },
+      { status: 500 }
+    );
   }
 };

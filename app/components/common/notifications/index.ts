@@ -5,12 +5,14 @@ type notificationProps = {
   type: "success" | "error";
   entity: string;
   action: string;
+  description?: string;
 };
 
 export default function MainNotification({
   type,
   entity,
   action,
+  description,
 }: notificationProps) {
   const generalNotification = {
     
@@ -26,6 +28,6 @@ export default function MainNotification({
 
   return notification[type]({
     message: generalNotification[type].message,
-    description: generalNotification[type].description,
+    description: description || generalNotification[type].description,
   });
 }

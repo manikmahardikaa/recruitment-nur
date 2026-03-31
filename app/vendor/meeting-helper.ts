@@ -49,7 +49,7 @@ export async function createZoomMeeting(topic: string, startTime: Date) {
     );
 
     return response.data.join_url;
-  } catch (error: any) {
+  } catch {
     throw new Error("Gagal membuat Zoom meeting.");
   }
 }

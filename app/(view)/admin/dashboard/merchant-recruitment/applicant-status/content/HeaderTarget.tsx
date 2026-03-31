@@ -39,8 +39,6 @@ export default function HeaderStatusCard({
         return "/admin/dashboard/merchant-recruitment/hired";
       case "rejected":
         return "/admin/dashboard/merchant-recruitment/rejected";
-      case "waiting":
-        return "/admin/dashboard/merchant-recruitment/screening";
       default:
         return "/admin/dashboard/merchant-recruitment/applicant-status";
     }

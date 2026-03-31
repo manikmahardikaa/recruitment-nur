@@ -1,10 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { JobDescriptionPayload } from "../models/job-description-payload";
 
 
 
 const CACHE_TTL_MS = 1000 * 60 * 10;
-const GEMINI_TIMEOUT_MS = 12_000;
+const OLLAMA_TIMEOUT_MS = 12_000;
 
 const descriptionCache = new Map<
   string,
@@ -21,7 +20,7 @@ export async function generateJobDescription(
   }
 
   const description =
-    (await fetchGeminiDescription(payload).catch(() => null)) ??
+    (await fetchOllamaDescription(payload).catch(() => null)) ??
     buildFallbackDescription(payload);
 
   descriptionCache.set(cacheKey, {
@@ -32,38 +31,43 @@ export async function generateJobDescription(
   return description;
 }
 
-async function fetchGeminiDescription(payload: JobDescriptionPayload) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("Missing GEMINI_API_KEY");
+async function fetchOllamaDescription(payload: JobDescriptionPayload) {
+  const baseUrl = process.env.OLLAMA_BASE_URL;
+  if (!baseUrl) {
+    throw new Error("Missing OLLAMA_BASE_URL");
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-  });
-
   const prompt = buildPrompt(payload);
+  const url = `${baseUrl.replace(/\/$/, "")}/api/generate`;
 
-  const response = (await withTimeout(
-    model.generateContent({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
+  const response = await withTimeout(
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "qwen2.5:3b",
+        prompt,
+        stream: false,
+        options: {
+          temperature: 0.6,
+          num_predict: 1024,
         },
-      ],
-      generationConfig: {
-        temperature: 0.6,
-        maxOutputTokens: 1024,
-      },
+      }),
     }),
-    GEMINI_TIMEOUT_MS,
-  )) as Awaited<ReturnType<typeof model.generateContent>>;
+    OLLAMA_TIMEOUT_MS,
+  );
 
-  const text = response.response.text().trim();
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(
+      `Ollama request failed: ${response.status} ${response.statusText} ${text}`,
+    );
+  }
+
+  const data = (await response.json()) as { response?: string };
+  const text = (data.response ?? "").trim();
   if (!text) {
-    throw new Error("Gemini returned empty description");
+    throw new Error("Ollama returned empty description");
   }
 
   return text;

@@ -82,13 +82,16 @@ export default function LoginContent() {
       <div className={styles.content}>
         <div className={styles.grid}>
           <div className={styles.leftPane}>
-            <span className={styles.badge}>Nur Cahaya Tunggal Recruitment Platform</span>
+            <span className={styles.badge}>
+              Nur Cahaya Tunggal Recruitment Platform
+            </span>
             <h1 className={styles.title}>
-              Build a professional career with the best <span>OSS</span> roles
+              Explore thousands of overseas job <span>opportunities</span> from
+              trusted companies.
             </h1>
             <p className={styles.subtitle}>
-              Access curated openings, track hiring steps transparently, and get
-              guided by our in-house HR experts throughout every stage.
+              Discover roles from diverse employers, track each hiring step
+              clearly, and get support throughout your application journey.
             </p>
 
             <ul className={styles.highlights}>
@@ -113,7 +116,7 @@ export default function LoginContent() {
               </div>
               <div className={styles.infoCardText}>
                 <span className={styles.infoTitle}>
-                  Centralized OSS recruitment portal
+                  Centralized Nur Cahaya Tunggal recruitment portal
                 </span>
                 <span className={styles.infoSubtitle}>
                   Trusted by hundreds of professionals every month

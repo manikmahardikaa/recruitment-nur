@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Checkbox, Typography, Tag } from "antd";
+import { Card, Checkbox, Typography, } from "antd";
 
 const { Text, Paragraph } = Typography;
 
@@ -22,7 +22,7 @@ export default function RequirementCard({
       bodyStyle={{ padding: 20 }}
     >
       {/* VIP Badge */}
-      <div style={{ marginBottom: 16, display: "flex", alignItems: "center" }}>
+      {/* <div style={{ marginBottom: 16, display: "flex", alignItems: "center" }}>
         <Tag
           color="#FFE9A3"
           style={{
@@ -33,7 +33,7 @@ export default function RequirementCard({
         >
           Nur Cahaya Tunggal Recruitment
         </Tag>
-      </div>
+      </div> */}
 
       {/* Checkbox + Title */}
       <div style={{ display: "flex", gap: 12 }}>

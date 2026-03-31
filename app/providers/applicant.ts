@@ -14,26 +14,6 @@ export const GET_APPLICANTS = async (merchant_id?: string) => {
         include: { location: true },
       },
       user: true,
-      mbti_test: true,
-      scheduleInterview: true,
-      evaluatorAssignment: {
-        include: {
-          evaluator: true,
-          baseMatriks: {
-            include: {
-              columns: true,
-              rows: {
-                include: {
-                  matriksQuestionOption: {
-                    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-                  },
-                },
-                orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-              },
-            },
-          },
-        },
-      },
     },
   });
 
@@ -50,8 +30,6 @@ export const GET_APPLICANT_BY_USER_ID = async (user_id: string) => {
         include: { location: true },
       },
       user: true,
-      mbti_test: true,
-      scheduleInterview: true,
     },
   });
 
@@ -92,7 +70,7 @@ export const CREATE_APPLICANT = async (
   if (existing) {
     throw new GeneralError({
       code: 409,
-      details: "Kamu sudah melamar untuk posisi ini.",
+      details: "You have already applied for this job.",
       error: "Conflict",
       error_code: "ALREADY_APPLIED",
     });
@@ -123,8 +101,6 @@ export const GET_APPLICANT = async (id: string) => {
         include: { location: true },
       },
       user: true,
-      mbti_test: true,
-      scheduleInterview: true,
     },
   });
 
@@ -153,26 +129,6 @@ export const GET_APPLICANTS_BY_JOB_ID = async (job_id: string) => {
         include: { location: true },
       },
       user: true,
-      mbti_test: true,
-      scheduleInterview: true,
-      evaluatorAssignment: {
-        include: {
-          evaluator: true,
-          baseMatriks: {
-            include: {
-              columns: true,
-              rows: {
-                include: {
-                  matriksQuestionOption: {
-                    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-                  },
-                },
-                orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-              },
-            },
-          },
-        },
-      },
     },
   });
   return result;

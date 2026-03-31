@@ -7,10 +7,9 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
-    "dev": "tsx watch lib/server.ts",
+    "dev": "next dev",
     "build": "next build",
-    "start": "node dist/server.js",
-    "postbuild": "tsc -p tsconfig.server.json"
+    "start": "next start"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -58,8 +57,6 @@
     "react-quill": "^2.0.0",
     "recharts": "^3.3.0",
     "sharp": "^0.34.5",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
     "tesseract.js": "^5.1.1",
     "tesseract.js-core": "^5.1.1"
   },

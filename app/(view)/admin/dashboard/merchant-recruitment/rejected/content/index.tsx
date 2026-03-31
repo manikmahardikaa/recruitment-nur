@@ -43,7 +43,6 @@ const STAGE_MAP: Record<string, RecruitmentStage | undefined> = {
   hired: toRecruitmentStage("HIRING"),
   hiring: toRecruitmentStage("HIRING"),
   rejected: toRecruitmentStage("REJECTED"),
-  waiting: toRecruitmentStage("WAITING"),
 };
 
 export default function CandidatesPage() {
@@ -127,10 +126,10 @@ export default function CandidatesPage() {
     return filtered.slice(start, start + pageSize);
   }, [filtered, page]);
 
-  // const selected = useMemo(
-  //   () => filtered.find((c) => c.id === selectedId) ?? null,
-  //   [filtered, selectedId]
-  // );
+  const selected = useMemo(
+    () => filtered.find((c) => c.id === selectedId) ?? null,
+    [filtered, selectedId]
+  );
 
   // Reorder saat hover item lain
   const onHoverMove = useCallback((dragId: string, overId: string) => {

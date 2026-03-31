@@ -382,386 +382,47 @@ export default function CandidateProgress({ applicant, meta }: Props) {
 
   function getStageConfig(
     stage: string,
-    applicant: ApplicantDataModel,
-    router: ReturnType<typeof useRouter>,
-    meta?: Props["meta"],
+    _applicant: ApplicantDataModel,
+    _router: ReturnType<typeof useRouter>,
+    _meta?: Props["meta"],
   ) {
-    const m = meta || {};
-
     switch (stage) {
       case "APPLICATION":
         return {
           title: "Application Details",
-          info: [
-            {
-              label: "Submitted On",
-              value: dayjs(applicant.createdAt).format("MMMM D, YYYY"),
-            },
-            { label: "Position", value: applicant.job?.job_title ?? "-" },
-          ],
-          actions: [
-            {
-              key: "cv-review",
-              label: "Recruiter will review your CV",
-              button: {
-                text: "View CV",
-                onClick: () =>
-                  window.open(
-                    applicant.user?.curiculum_vitae_url || "#",
-                    "_blank",
-                  ),
-                disabled: !applicant.user?.curiculum_vitae_url,
-                tooltip: !applicant.user?.curiculum_vitae_url
-                  ? "No CV found"
-                  : "Open CV",
-              },
-            },
-          ] as ActionItem[],
+          info: [],
+          actions: [] as ActionItem[],
         };
-
       case "SCREENING":
         return {
           title: "Screening Stage Details",
           info: [{ label: "STATUS", value: "In Progress" }],
           actions: [] as ActionItem[],
         };
-
-      case "INTERVIEW": {
-        const interviews = [...(applicant.scheduleInterview ?? [])]
-          .filter((it) => dayjs(it.start_time ?? it.date).isValid())
-          .sort((a, b) => {
-            const aTime = dayjs(a.start_time ?? a.date).valueOf();
-            const bTime = dayjs(b.start_time ?? b.date).valueOf();
-            return aTime - bTime;
-          });
-
-        const now = Date.now();
-        const upcomingInterview =
-          interviews.find(
-            (item) => dayjs(item.start_time ?? item.date).valueOf() >= now,
-          ) ?? null;
-        const latestInterview =
-          interviews.length > 0 ? interviews[interviews.length - 1] : null;
-
-        const selectedInterview = upcomingInterview ?? latestInterview ?? null;
-
-        const rawInterviewDate =
-          m.interviewDate ??
-          selectedInterview?.start_time ??
-          selectedInterview?.date ??
-          null;
-
-        const hasInterviewDate = Boolean(rawInterviewDate);
-        const hasSelectedInterview =
-          Boolean(selectedInterview) && hasInterviewDate;
-
-        const interviewStatus = hasInterviewDate
-          ? dayjs(rawInterviewDate).valueOf() < now
-            ? "Completed"
-            : "Scheduled"
-          : "Awaiting schedule";
-
-        const interviewDateDisplay = hasInterviewDate
-          ? dayjs(rawInterviewDate).format("HH:mm, MMMM D, YYYY")
-          : "-";
-
-        const scheduleLabel = hasInterviewDate
-          ? "Review or reschedule your interview"
-          : "Schedule interview with recruiter";
-
-        // —— HANYA HITUNG METHOD JIKA SUDAH ADA JADWAL ——
-        let methodValue: React.ReactNode = "-";
-        if (hasSelectedInterview) {
-          const isOnline = selectedInterview!.is_online === true;
-          if (isOnline) {
-            const link = selectedInterview!.meeting_link;
-            methodValue = link ? (
-              <Link href={link} target="_blank" rel="noreferrer">
-                Online Meeting (open link)
-              </Link>
-            ) : (
-              "Online (link pending)"
-            );
-          } else {
-            // offline — boleh fallback ke Head Office *hanya setelah ada jadwal*
-            const hq = headOffice;
-            methodValue = hq ? (
-              <Space direction="vertical" size={2}>
-                <Text strong>{hq.name} (Offline)</Text>
-                {hq.type && <Tag color="blue">{humanizeType(hq.type)}</Tag>}
-                {hq.mapsUrl && (
-                  <Link href={hq.mapsUrl} target="_blank" rel="noreferrer">
-                    View on Maps
-                  </Link>
-                )}
-              </Space>
-            ) : (
-              "Offline (location pending)"
-            );
-          }
-        }
-
+      case "INTERVIEW":
         return {
           title: "Interview Stage Details",
-          info: [
-            { label: "Status", value: interviewStatus },
-            { label: "Interview Date", value: interviewDateDisplay },
-            { label: "Method", value: methodValue }, // <- saat belum ada jadwal, pasti "-"
-          ],
-          actions: [
-            {
-              key: "schedule",
-              label: scheduleLabel,
-              button: {
-                text: hasInterviewDate ? "Reschedule" : "Schedule",
-                tooltip: hasInterviewDate
-                  ? "Update interview time"
-                  : "Pick interview time",
-                onClick: () =>
-                  window.open(
-                    `/evaluator/schedule?applicant_id=${applicant.id}`,
-                    "_blank",
-                    "noopener,noreferrer",
-                  ),
-              },
-            },
-            {
-              key: "prep",
-              label: "Read interview preparation guideline",
-              button: {
-                text: "Open Guide",
-                onClick: () => window.open("/guide/interview", "_blank"),
-              },
-            },
-            {
-              key: "doc",
-              label: "Upload Documents",
-              button: {
-                text: "Upload Documents",
-                // onClick: handleOpenModal,
-              },
-            },
-          ] as ActionItem[],
+          info: [{ label: "STATUS", value: "Awaiting schedule" }],
+          actions: [] as ActionItem[],
         };
-      }
-
-      case "OFFERING": {
-        const hasOfferDocument = Boolean(contractByApplicant?.filePath);
-        const isDecisionPending = decisionStatus === "PENDING";
-
-        // Toleransi salah eja "REFERRAL" vs "REFFERAL"
-        const isReferralJob = ["REFERRAL", "REFFERAL"].includes(
-          (applicant.job?.type_job ?? "").toUpperCase(),
-        );
-
-        const actions: ActionItem[] = [
-          {
-            key: "upload-identity",
-            label: "Upload identity document",
-            button: {
-              text: applicant.user?.no_identity_url
-                ? "Document Uploaded"
-                : "Upload Document",
-              onClick: handleOpenModal,
-              disabled: !!applicant.user?.no_identity_url,
-            },
-          },
-          {
-            key: "offer",
-            label: "Review the offer letter",
-            button: {
-              text: hasOfferDocument ? "View Offer" : "Offer Pending",
-              onClick: () =>
-                hasOfferDocument &&
-                window.open(contractByApplicant!.filePath!, "_blank"),
-              disabled: !hasOfferDocument,
-              tooltip: hasOfferDocument ? "Open Offer" : "No offer link",
-            },
-          },
-          {
-            key: "decision",
-            label: `Offer decision — ${decisionMeta.label}`,
-            button: {
-              text: isDecisionPending ? "Review Decision" : "View Decision",
-              onClick: handleOpenDecisionModal,
-              tooltip: decisionMeta.helper,
-              // tombol hanya dikunci bila belum ada offer dan status masih pending
-              disabled: !hasOfferDocument && isDecisionPending,
-            },
-          },
-        ];
-
-        if (finalDocumentUrl) {
-          actions.push({
-            key: "final-documents",
-            label: hasDirectorSignedDocument
-              ? "Download director signed contract"
-              : "Download signed contract",
-            button: {
-              text: "Download Final PDF",
-              onClick: () =>
-                window.open(finalDocumentUrl, "_blank", "noopener,noreferrer"),
-            },
-          });
-        } else {
-          actions.push({
-            key: "final-documents",
-            label: "Final contract pending",
-            button: {
-              text: "Awaiting Upload",
-              disabled: true,
-              tooltip:
-                "The final signed contract will appear here once available.",
-            },
-          });
-        }
-
-        const memberCardItem: StageInfoItem | undefined = isReferralJob
-          ? {
-              label: "MEMBER CARD",
-              value:
-                applicant.user.member_card_url != null ? (
-                  <Link
-                    href={applicant.user.member_card_url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    View
-                  </Link>
-                ) : (
-                  <Text type="secondary">Not Uploaded</Text>
-                ),
-            }
-          : undefined;
-
-        const infoItems: StageInfoItem[] = [
-          { label: "STATUS", value: "Offer Sent" },
-          { label: "POSITION", value: applicant.job?.job_title ?? "-" },
-          {
-            label: "DECISION",
-            value: (
-              <Space size={6}>
-                <Tag color={decisionMeta.color}>{decisionMeta.label}</Tag>
-                {!isDecisionPending && decisionAtDisplay && (
-                  <Text type="secondary">{decisionAtDisplay}</Text>
-                )}
-              </Space>
-            ),
-          },
-          ...(memberCardItem ? [memberCardItem] : []),
-        ];
-
-        if (decisionStatus === "ACCEPTED" && signatureUrlFromServer) {
-          infoItems.push({
-            label: "SIGNED OFFER",
-            value: (
-              <Link
-                href={signatureUrlFromServer}
-                target="_blank"
-                rel="noreferrer"
-              >
-                View Signature
-              </Link>
-            ),
-          });
-        }
-
-        if (finalDocumentUrl) {
-          infoItems.push({
-            label: hasDirectorSignedDocument
-              ? "DIRECTOR SIGNED CONTRACT"
-              : "FINAL SIGNED CONTRACT",
-            value: (
-              <Link href={finalDocumentUrl} target="_blank" rel="noreferrer">
-                View final PDF
-              </Link>
-            ),
-          });
-        }
-
+      case "OFFERING":
         return {
           title: "Offer Stage",
-          info: infoItems,
-          actions,
+          info: [{ label: "STATUS", value: "Offer Sent" }],
+          actions: [] as ActionItem[],
         };
-      }
-      case "HIRING": {
-        // HIRED is the hiring/onboarding stage
-
-        const actions: ActionItem[] = [
-          {
-            key: "upload-identity",
-            label: "Upload identity document",
-            button: {
-              text: applicant.user?.no_identity_url
-                ? "Document Uploaded"
-                : "Upload Document",
-              onClick: handleOpenModal,
-              disabled: !!applicant.user?.no_identity_url,
-            },
-          },
-          {
-            key: "employyee-setup",
-            label: "Complete employee setup procedure documents",
-            button: {
-              text: "Employee Setup Documents",
-              onClick: () =>
-                window.open(
-                  `/user/home/apply-job/detail/employee-setup?applicant_id=${applicant.id}`,
-                  "_blank",
-                ),
-            },
-          },
-        ];
-
-        const infoItems: StageInfoItem[] = [
-          {
-            label: "STATUS",
-            value: "Hiring",
-          },
-          { label: "POSITION", value: applicant.job?.job_title ?? "-" },
-          {
-            label: "SCHEDULE ONBOARDING",
-            value: scheduleHired ? (
-              <Space>
-                <Tag color="green">
-                  {formatDateTime(scheduleHired.start_time)}
-                </Tag>
-              </Space>
-            ) : (
-              <Space>
-                <Tag color="red">Not Scheduled</Tag>
-              </Space>
-            ),
-          },
-        ];
-
+      case "HIRING":
         return {
           title: "Hiring & Onboarding",
-          info: infoItems,
-          actions,
+          info: [{ label: "STATUS", value: "Hiring" }],
+          actions: [] as ActionItem[],
         };
-      }
-
       case "REJECTED":
         return {
           title: "Application Result",
-          info: [
-            { label: "STATUS", value: "Rejected" },
-            { label: "REASON", value: m.rejectedReason || "—" },
-          ],
-          actions: [
-            {
-              key: "feedback",
-              label: "Read feedback & resources to improve",
-              button: {
-                text: "View Resources",
-                onClick: () => window.open("/resources/improve", "_blank"),
-              },
-            },
-          ] as ActionItem[],
+          info: [{ label: "STATUS", value: "Rejected" }],
+          actions: [] as ActionItem[],
         };
-
       default:
         return {
           title: "Information",
@@ -1049,57 +710,63 @@ export default function CandidateProgress({ applicant, meta }: Props) {
             />
           </Card>
 
-          <Card
-            bordered={false}
-            style={{
-              borderRadius: 20,
-              background: "#ffffff",
-              boxShadow: "0 20px 56px rgba(15,23,42,0.1)",
-            }}
-            title={
-              <Space align="center">
-                <FileTextOutlined />
-                <span>{stageConfig.title}</span>
-              </Space>
-            }
-            bodyStyle={{ paddingTop: 16 }}
-          >
-            {stageConfig.info.length > 0 && (
-              <>
-                <Space direction="vertical" size={12} style={{ width: "100%" }}>
-                  {stageConfig.info.map((info) => (
-                    <div
-                      key={info.label}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: 16,
-                        padding: "12px 16px",
-                        background: "#f5f7ff",
-                        borderRadius: 14,
-                      }}
-                    >
-                      <Text
-                        type="secondary"
-                        style={{ fontSize: 12, textTransform: "uppercase" }}
-                      >
-                        {info.label}
-                      </Text>
-                      <div style={{ textAlign: "right" }}>
-                        {typeof info.value === "string" ? (
-                          <Text strong>{info.value}</Text>
-                        ) : (
-                          info.value
-                        )}
-                      </div>
-                    </div>
-                  ))}
+          {(currentStage !== "APPLICATION") &&
+            (stageConfig.info.length > 0 || stageConfig.actions.length > 0) && (
+            <Card
+              bordered={false}
+              style={{
+                borderRadius: 20,
+                background: "#ffffff",
+                boxShadow: "0 20px 56px rgba(15,23,42,0.1)",
+              }}
+              title={
+                <Space align="center">
+                  <FileTextOutlined />
+                  <span>{stageConfig.title}</span>
                 </Space>
-                <Divider />
-              </>
-            )}
-
-          </Card>
+              }
+              bodyStyle={{ paddingTop: 16 }}
+            >
+              {stageConfig.info.length > 0 && (
+                <>
+                  <Space
+                    direction="vertical"
+                    size={12}
+                    style={{ width: "100%" }}
+                  >
+                    {stageConfig.info.map((info) => (
+                      <div
+                        key={info.label}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 16,
+                          padding: "12px 16px",
+                          background: "#f5f7ff",
+                          borderRadius: 14,
+                        }}
+                      >
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: 12, textTransform: "uppercase" }}
+                        >
+                          {info.label}
+                        </Text>
+                        <div style={{ textAlign: "right" }}>
+                          {typeof info.value === "string" ? (
+                            <Text strong>{info.value}</Text>
+                          ) : (
+                            info.value
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </Space>
+                  <Divider />
+                </>
+              )}
+            </Card>
+          )}
 
 
           <Modal

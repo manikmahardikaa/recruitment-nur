@@ -4,7 +4,7 @@ import React from "react";
 import { Card, Col, Empty, Row, Space } from "antd";
 
 import type { ApplicantDataModel } from "@/app/models/applicant";
-import CandidateInfoPanel from "@/app/components/common/information-panel";
+import CandidateOverview from "@/app/(view)/admin/dashboard/merchant-recruitment/screening/content/CandidateOverview";
 import OfferContractManager from "@/app/(view)/admin/dashboard/merchant-recruitment/offering/content/OfferContractManager";
 
 type Props = {
@@ -21,29 +21,17 @@ export default function OfferingCandidate({ candidate }: Props) {
   }
 
   return (
-    <Row gutter={[16, 16]}>
-      <Col xs={24} md={8}>
-        <CandidateInfoPanel
-          email={candidate.user.email}
-          phone={candidate.user.phone}
-          dateOfBirth={candidate.user.date_of_birth}
-          jobName={candidate.job?.job_title}
-          appliedAt={candidate.createdAt}
-          stage={candidate.stage}
-          updatedAt={candidate.updatedAt}
-          cvUrl={candidate.user.curiculum_vitae_url}
-          portfolioUrl={candidate.user.portfolio_url}
-        />
-      </Col>
-      <Col xs={24} md={16}>
-        <Space
-          direction="vertical"
-          size={12}
-          style={{ width: "100%", display: "block" }}
-        >
+    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+      <CandidateOverview
+        candidate={candidate}
+        onCreateMbtiTest={() => {}}
+        isCreatingMbtiTest={false}
+      />
+      <Row gutter={[16, 16]}>
+        <Col xs={24}>
           <OfferContractManager candidate={candidate} />
-        </Space>
-      </Col>
-    </Row>
+        </Col>
+      </Row>
+    </Space>
   );
 }

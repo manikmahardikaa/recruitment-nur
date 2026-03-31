@@ -2,15 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import Sider from "antd/es/layout/Sider";
 import { Divider, Menu, Typography, theme } from "antd";
 import type { MenuProps } from "antd";
 import { SidebarMenuMainAdmin } from "@/app/data/admin/main/sidebar-data";
-import {
-  SidebarMenuSettingAdmin,
-  type AdminRole,
-} from "@/app/data/admin/setting/sidebar-data";
 import Image from "next/image";
 
 const { Text } = Typography;
@@ -18,18 +13,14 @@ const { Text } = Typography;
 export const SiderAdmin = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: session } = useSession();
   const { token } = theme.useToken();
 
   const [collapsed, setCollapsed] = useState(false);
   const [activeKey, setActiveKey] = useState("/");
   const [openKeys, setOpenKeys] = useState<string[]>([]);
-  const role = session?.user?.role as AdminRole | undefined;
 
   // Memoize menu items (avoid re-renders)
   const mainItems = useMemo(() => SidebarMenuMainAdmin(), []);
-  const settingItems = useMemo(() => SidebarMenuSettingAdmin(role), [role]);
-
   // Normalize active key (first 4 segments like your original logic)
   useEffect(() => {
     const key = (pathname ?? "")
@@ -132,20 +123,6 @@ export const SiderAdmin = () => {
         <Menu
           mode="inline"
           items={mainItems}
-          onClick={onClick}
-          selectedKeys={[activeKey]}
-          openKeys={collapsed ? [] : openKeys}
-          onOpenChange={setOpenKeys}
-          style={{ borderRight: 0, background: "#fff", paddingInline: 8 }}
-          inlineIndent={16}
-        />
-
-        <Divider style={{ margin: 12 }} />
-
-        <SectionLabel>SETTINGS</SectionLabel>
-        <Menu
-          mode="inline"
-          items={settingItems}
           onClick={onClick}
           selectedKeys={[activeKey]}
           openKeys={collapsed ? [] : openKeys}

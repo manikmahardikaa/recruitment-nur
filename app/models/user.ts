@@ -1,10 +1,12 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-
-import { Prisma, User, UserInterestTag } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { GeneralOmitModel } from "./general-omit";
 
+export type UserInterestTagModel = {
+  interest?: string;
+};
+
 export interface UserDataModel extends User {
-  interestTags: UserInterestTag[];
+  interestTags?: UserInterestTagModel[];
 }
 
 export type UserPayloadCreateModel = Omit<

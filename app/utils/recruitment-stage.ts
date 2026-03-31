@@ -36,7 +36,6 @@ const STAGE_LABELS: Record<string, string> = {
   HIRING: "Hiring",
   HIRED: "Hiring",
   REJECTED: "Rejected",
-  WAITING: "Waiting",
 };
 
 export const SUMMARY_STAGE_CONFIG = [
@@ -45,7 +44,6 @@ export const SUMMARY_STAGE_CONFIG = [
   { key: "offering", label: "Offering", stages: ["OFFERING"] },
   { key: "hired", label: "Hiring", stages: [CANONICAL_HIRING_STAGE] },
   { key: "rejected", label: "Rejected", stages: ["REJECTED"] },
-  { key: "waiting", label: "Waiting", stages: ["WAITING"] },
 ] as const;
 
 export type SummaryStageKey = (typeof SUMMARY_STAGE_CONFIG)[number]["key"];
@@ -120,8 +118,6 @@ export function stageKeyToStage(stageKey: string): string | undefined {
       return CANONICAL_HIRING_STAGE;
     case "rejected":
       return "REJECTED";
-    case "waiting":
-      return "WAITING";
     default:
       return undefined;
   }
