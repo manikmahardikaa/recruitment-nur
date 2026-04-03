@@ -7,7 +7,7 @@ import {
   LocationType,
   RecruitmentStage,
 } from "@prisma/client";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const db = new PrismaClient();
 
@@ -314,4 +314,3 @@ main()
     await db.$disconnect();
     process.exit(1);
   });
-
