@@ -49,7 +49,6 @@ const stageColors: Record<SummaryStageKey, string> = {
   offering: "#722ed1",
   hired: "#52c41a",
   rejected: "#ff4d4f",
-  waiting: "#bfbfbf",
 };
 
 export default function DashboardContent() {
@@ -192,8 +191,6 @@ export default function DashboardContent() {
           <Col key={card.key} xs={24} sm={12} xl={6}>
             <Card
               hoverable
-              // onMouseEnter={card.onMouseEnter}
-              onClick={card.onClick}
             >
               <Space align="start" size={16}>
                 <div
@@ -214,7 +211,7 @@ export default function DashboardContent() {
                 <div style={{ flex: 1 }}>
                   <Text type="secondary">{card.title}</Text>
                   <div style={{ marginTop: 4 }}>
-                    {(card.loading ?? loading) ? (
+                    {loading ? (
                       <Skeleton.Input
                         active
                         size="small"

@@ -22,12 +22,8 @@ import DraggableCandidateItem from "@/app/utils/dnd-helper";
 import { useCandidate, useCandidates } from "@/app/hooks/applicant";
 import { useRecruitment } from "../../context";
 import { RecruitmentStage } from "@prisma/client";
-import HiredSchedulePage from "./HiredCandidate";
 import CandidateOverview from "../../screening/content/CandidateOverview";
-import { ScheduleHiredPayloadCreateModel } from "@/app/models/schedule-hired";
 import { ApplicantDataModel } from "@/app/models/applicant";
-import { useScheduleHireds } from "@/app/hooks/schedule-hired";
-import type { ScheduleHiredFormValues } from "@/app/components/common/form/admin/hired";
 import {
   SUMMARY_STAGE_CONFIG,
   stageMatches,
@@ -115,13 +111,6 @@ export default function CandidatesPage() {
   // Search, selection, pagination (berbasis list lokal)
   const [query, setQuery] = useState("");
 
-  const {
-    data: scheduleHireds = [],
-    fetchLoading: scheduleLoading,
-    refetch: refetchScheduleHireds,
-    onCreate: createHired,
-    onCreateLoading: createHiredLoading,
-  } = useScheduleHireds({});
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return list;
@@ -182,43 +171,6 @@ export default function CandidatesPage() {
     return () => setOnUpdateStatus(undefined);
     // setOnUpdateStatus stabil dari context; updateStatus stabil dari react-query
   }, [setOnUpdateStatus, updateStatus]);
-
-  const handleCreateSceheduleHired = async (
-    values: ScheduleHiredFormValues
-  ) => {
-    if (!selected) {
-      message.error("Please select candidate before scheduling.");
-      return;
-    }
-
-    const locationId = values.location_id ?? selected.job?.location_id ?? "";
-
-    if (!locationId) {
-      message.error("Please select a location for the schedule.");
-      return;
-    }
-
-    const dateValue = values.date?.startOf("day").toDate();
-    const startTimeValue =
-      values.date && values.start_time
-        ? values.date
-            .hour(values.start_time.hour())
-            .minute(values.start_time.minute())
-            .second(values.start_time.second())
-            .millisecond(0)
-            .toDate()
-        : values.start_time?.toDate();
-
-    const payload: ScheduleHiredPayloadCreateModel = {
-      applicant_id: selected.id,
-      location_id: locationId,
-      date: dateValue,
-      start_time: startTimeValue,
-    };
-
-    await createHired(payload);
-    await refetchScheduleHireds();
-  };
 
   return (
     <Row gutter={[16, 16]}>
@@ -292,20 +244,7 @@ export default function CandidatesPage() {
       <Col xs={24} md={16}>
         <Space direction="vertical" size={16} style={{ display: "flex" }}>
           <Card style={{ height: "100%" }}>
-            <CandidateOverview
-              candidate={selected}
-              onCreateMbtiTest={() => {}}
-              isCreatingMbtiTest={false}
-            />
-          </Card>
-          <Card style={{ height: "100%" }}>
-            <HiredSchedulePage
-              candidate={selected}
-              listData={scheduleHireds}
-              listLoading={scheduleLoading}
-              onCreateSchedule={handleCreateSceheduleHired}
-              onLoadingCreate={createHiredLoading}
-            />
+            <CandidateOverview candidate={selected} />
           </Card>
         </Space>
       </Col>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Card, Typography, Space, Divider, Tag } from "antd";
+import { Card, Typography, Space, Divider } from "antd";
 import {
   MailOutlined,
   PhoneOutlined,
@@ -24,7 +24,6 @@ type LeftPanelProps = {
   dateOfBirth?: string | Date | null;
   jobName?: string | null;
   appliedAt?: string | Date | null;
-  link_test_mbti?: string | null;
   updatedAt?: string | Date | null;
   cvUrl?: string | null;
   portfolioUrl?: string | null;
@@ -91,7 +90,6 @@ export default function CandidateInfoPanel({
   updatedAt,
   cvUrl,
   portfolioUrl,
-  link_test_mbti,
   stage,
 }: LeftPanelProps) {
   return (
@@ -200,11 +198,6 @@ export default function CandidateInfoPanel({
           )}
         </Space>
       </div>
-      {stage === "SCREENING" && link_test_mbti ? (
-        <div style={{ padding: "16px 20px 20px" }}>
-          <Tag color="green">MBTI test link created</Tag>
-        </div>
-      ) : null}
     </Card>
   );
 }

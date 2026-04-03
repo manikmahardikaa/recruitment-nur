@@ -8,27 +8,18 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import CandidateInfoPanel from "@/app/components/common/information-panel";
 import { PDFViewer } from "@/app/utils/pdf-viewer";
-import AnswerScreening from "./AnswerScreening";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faBrain,
   faFilePdf,
   faFolderOpen,
-  faListCheck,
 } from "@fortawesome/free-solid-svg-icons";
-import MBTITestComponent from "./MBTITest";
-import DISCTest from "./DSICTest";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export default function CandidateOverview({
   candidate,
-  onCreateMbtiTest,
-  isCreatingMbtiTest = false,
 }: {
   candidate: ApplicantDataModel | null;
-  onCreateMbtiTest: () => void;
-  isCreatingMbtiTest?: boolean;
 }) {
   const tabs = useMemo(
     () => [
@@ -90,20 +81,7 @@ export default function CandidateOverview({
       //   children: <DISCTest></DISCTest>,
       // },
     ],
-    [
-      candidate?.id,
-      candidate?.user?.curiculum_vitae_url,
-      candidate?.user?.portfolio_url,
-      candidate?.mbti_test,
-      candidate?.mbti_test?.link_url,
-      candidate?.mbti_test?.id,
-      candidate?.mbti_test?.is_complete,
-      candidate?.mbti_test?.createdAt,
-      candidate?.mbti_test?.updatedAt,
-      candidate?.stage,
-      onCreateMbtiTest,
-      isCreatingMbtiTest,
-    ]
+    [candidate?.id, candidate?.user?.curiculum_vitae_url, candidate?.user?.portfolio_url]
   );
 
   if (!candidate) {
@@ -135,7 +113,6 @@ export default function CandidateOverview({
           jobName={candidate.job?.job_title}
           appliedAt={candidate?.createdAt}
           updatedAt={candidate?.updatedAt}
-          link_test_mbti={candidate.mbti_test?.link_url}
           stage={candidate.stage}
         />
       </Col>

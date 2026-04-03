@@ -52,9 +52,7 @@ export default function PreviewComponent() {
             portfolioUrl={detailUserData?.portfolio_url}
             address={detailUserData?.address}
             gender={detailUserData?.gender}
-            interests={
-              detailUserData?.interestTags?.map((item) => item.interest) ?? []
-            }
+            interests={[]}
           />
         </Space>
       </Col>

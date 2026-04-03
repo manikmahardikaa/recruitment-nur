@@ -22,7 +22,6 @@ import { useCandidate, useCandidates } from "@/app/hooks/applicant";
 import CandidateOverview from "./CandidateOverview";
 import { useRecruitment } from "../../context";
 import { RecruitmentStage } from "@prisma/client";
-import { useMbtiTests } from "@/app/hooks/mbti-test";
 import {
   SUMMARY_STAGE_CONFIG,
   stageMatches,
@@ -32,11 +31,6 @@ import type { SummaryStageKey } from "@/app/utils/recruitment-stage";
 import { useSearchParams } from "next/navigation";
 
 const { Title, Text } = Typography;
-
-interface Payload {
-  user_id: string;
-  applicant_id: string;
-}
 
 type StageCounts = Record<SummaryStageKey, number> & { all: number };
 
@@ -57,9 +51,6 @@ export default function CandidatesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const merchantId = searchParams.get("merchant_id") || undefined;
-
-  const { onCreate: onCreateTestMbti, onCreateLoading: onCreateMbtiLoading } =
-    useMbtiTests({});
 
   const { data: candidatesData = [] } = useCandidates({
     queryString: merchantId
@@ -114,24 +105,6 @@ export default function CandidatesPage() {
 
   // Search, selection, pagination (berbasis list lokal)
   const [query, setQuery] = useState("");
-
-  const handleCreateTestMbti = async () => {
-    if (!selected || !selectedId) {
-      message.warning("Please select a candidate first.");
-      return;
-    }
-
-    const payload: Payload = {
-      user_id: selected.user_id,
-      applicant_id: selectedId,
-    };
-
-    try {
-      await onCreateTestMbti(payload);
-    } catch (error) {
-      // notification already handled inside the hook
-    }
-  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -264,11 +237,7 @@ export default function CandidatesPage() {
       {/* RIGHT */}
       <Col xs={24} md={16}>
         <Card style={{ height: "100%" }}>
-          <CandidateOverview
-            candidate={selected}
-            onCreateMbtiTest={handleCreateTestMbti}
-            isCreatingMbtiTest={onCreateMbtiLoading}
-          />
+          <CandidateOverview candidate={selected} />
         </Card>
       </Col>
     </Row>

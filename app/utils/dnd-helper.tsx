@@ -100,7 +100,7 @@ export default function DraggableCandidateItem({
   const onMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
       case "chat":
-        router.push(`/admin/dashboard/chat-user?applicant_id=${id}`);
+        return;
         break;
 
       case "chatViaWhatsaap": {

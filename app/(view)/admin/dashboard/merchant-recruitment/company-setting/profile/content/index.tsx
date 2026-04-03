@@ -40,19 +40,16 @@ import {
 } from "@/app/models/location";
 import { LocationType } from "@prisma/client";
 
-type ProfileCompanyFormValues = Pick<
-  ProfileCompanyDataModel,
-  | "company_name"
-  | "description"
-  | "total_employee"
-  | "industry"
-  | "website_url"
-  | "instagram_url"
-  | "facebook_url"
-  | "linkedin_url"
-  | "twitter_url"
-  | "logo_url"
->;
+type ProfileCompanyFormValues = {
+  company_name: string;
+  description: string;
+  website_url?: string;
+  instagram_url?: string;
+  facebook_url?: string;
+  linkedin_url?: string;
+  twitter_url?: string;
+  logo_url?: string;
+};
 
 type LocationFormValues = {
   id?: string;
@@ -69,13 +66,16 @@ type CompanySettingFormValues = ProfileCompanyFormValues & {
   location?: LocationFormValues;
 };
 
+type ProfileCompanyDataModelWithExtras = ProfileCompanyDataModel & {
+  total_employee?: number | null;
+  industry?: string | null;
+};
+
 const mapProfileToFormValues = (
-  profile: ProfileCompanyDataModel
+  profile: ProfileCompanyDataModelWithExtras
 ): ProfileCompanyFormValues => ({
   company_name: profile.company_name,
   description: profile.description,
-  total_employee: profile.total_employee,
-  industry: profile.industry,
   website_url: profile.website_url ?? "",
   instagram_url: profile.instagram_url ?? "",
   facebook_url: profile.facebook_url ?? "",
@@ -89,8 +89,6 @@ const normalizeFormValues = (
 ): ProfileCompanyFormValues => ({
   company_name: values.company_name.trim(),
   description: values.description.trim(),
-  total_employee: values.total_employee,
-  industry: values.industry,
   website_url: values.website_url?.trim() ?? "",
   instagram_url: values.instagram_url?.trim() ?? "",
   facebook_url: values.facebook_url?.trim() ?? "",
@@ -174,9 +172,7 @@ export default function CompanySettingProfileContent({
     const payload: ProfileCompanyPayloadCreateModel = {
       company_name: normalizedValues.company_name,
       description: normalizedValues.description,
-      total_employee: normalizedValues.total_employee,
       merchant_id: merchantId ?? resolvedData?.merchant_id ?? "",
-      industry: normalizedValues.industry,
       website_url: normalizedValues.website_url || null,
       instagram_url: normalizedValues.instagram_url || null,
       facebook_url: normalizedValues.facebook_url || null,

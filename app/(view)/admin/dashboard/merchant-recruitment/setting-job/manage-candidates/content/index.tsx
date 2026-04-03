@@ -17,7 +17,6 @@ import {
   Tag,
   Typography,
   Tooltip,
-  Modal,
   Empty,
 } from "antd";
 import {
@@ -25,8 +24,6 @@ import {
   ReloadOutlined,
   FileSearchOutlined,
   UserOutlined,
-  ProfileOutlined,
-  LineChartOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
@@ -43,7 +40,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip as RTooltip,
-  ReferenceLine,
 } from "recharts";
 import { getStageLabel, stageMatches } from "@/app/utils/recruitment-stage";
 
@@ -136,11 +132,8 @@ export default function Content() {
   const [chartRange, setChartRange] = useState<[Dayjs, Dayjs] | null>(null);
 
   // ---------- STATE: MODAL + ROW UNTUK CHART PER CANDIDATE (tabel) ----------
-  const [chartOpen, setChartOpen] = useState(false);
-  const [chartRow, setChartRow] = useState<CandidateRecord | null>(null);
 
   // ---------- STATE: MODAL TOP CANDIDATE (chart atas) ----------
-  const [topModalOpen, setTopModalOpen] = useState(false);
 
   // ---------- FILTERED: UNTUK TABEL ----------
   const tableFiltered = useMemo(() => {
@@ -259,84 +252,8 @@ export default function Content() {
     }));
   }, [chartFiltered]);
 
-  // ---------- DATA: TOP CANDIDATE (overall score per applicant, hanya INTERVIEW) ----------
-  const interviewFilteredForTop = useMemo(() => {
-    let out = list.filter((r) => stageMatches(r.stage, "INTERVIEW"));
-    if (!out.length) return [];
-    // ikuti range yang sama dengan chart atas:
-    if (Array.isArray(chartRange) && chartRange[0] && chartRange[1]) {
-      if (USE_LOCAL_COMPARE) {
-        const start = chartRange[0].startOf("day");
-        const end = chartRange[1].endOf("day");
-        out = out.filter((r) => {
-          const createdLocal = toLocalFromUTC(r?.createdAt);
-          if (!createdLocal || !createdLocal.isValid()) return false;
-          return (
-            createdLocal.isSameOrAfter(start) &&
-            createdLocal.isSameOrBefore(end)
-          );
-        });
-      } else {
-        const startUtc = chartRange[0].utc().startOf("day");
-        const endUtc = chartRange[1].utc().endOf("day");
-        out = out.filter((r) => {
-          const createdUtc = toUTC(r?.createdAt);
-          if (!createdUtc || !createdUtc.isValid()) return false;
-          return (
-            createdUtc.isSameOrAfter(startUtc) &&
-            createdUtc.isSameOrBefore(endUtc)
-          );
-        });
-      }
-    }
-    return out;
-  }, [list, chartRange]);
-
-  const topChartData = useMemo(() => {
-    const items = interviewFilteredForTop
-      .map((app) => {
-        const evals = Array.isArray(app.evaluatorAssignment)
-          ? app.evaluatorAssignment
-          : [];
-        const scores = evals
-          .map((ea) =>
-            typeof ea?.overallScore === "number" ? ea.overallScore : null
-          )
-          .filter((n): n is number => n != null);
-
-        if (!scores.length) return null;
-
-        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-        return {
-          id: app.id,
-          name: app?.user?.name || "Unknown",
-          email: app?.user?.email || "",
-          evaluatorCount: scores.length,
-          avgScore: avg,
-        };
-      })
-      .filter(
-        (
-          x
-        ): x is {
-          id: string;
-          name: string;
-          email: string;
-          evaluatorCount: number;
-          avgScore: number;
-        } => !!x
-      );
-
-    // urut tertinggi → terendah
-    items.sort((a, b) => b.avgScore - a.avgScore);
-    return items;
-  }, [interviewFilteredForTop]);
-
-  const globalAvgTop = useMemo(() => {
-    if (!topChartData.length) return null;
-    const sum = topChartData.reduce((a, b) => a + b.avgScore, 0);
-    return sum / topChartData.length;
-  }, [topChartData]);
+  // ---------- DATA: TOP CANDIDATE ----------
+  // evaluator scores removed, so keep this section empty.
 
   // ---------- TABEL: KOLUMN ----------
   const columns = [
@@ -394,27 +311,6 @@ export default function Content() {
       },
     },
     {
-      title: "MBTI",
-      key: "mbti",
-      render: (_: ApplicantDataModel, row: ApplicantDataModel) => {
-        const m = row?.mbti_test;
-        if (!m) return <Text type="secondary">-</Text>;
-        return (
-          <Space direction="vertical" size={2}>
-            <Space>
-              <ProfileOutlined />
-              <Text>{m?.is_complete ? "Completed" : "Pending"}</Text>
-            </Space>
-            {m?.link_url ? (
-              <Link href={m.link_url} target="_blank">
-                <Button size="small">Open Test Link</Button>
-              </Link>
-            ) : null}
-          </Space>
-        );
-      },
-    },
-    {
       title: "Documents",
       key: "docs",
       render: (_: ApplicantDataModel, row: ApplicantDataModel) => (
@@ -441,7 +337,6 @@ export default function Content() {
       key: "action",
       fixed: "right" as const,
       render: (_: ApplicantDataModel, row: ApplicantDataModel) => {
-        const isInterview = (row?.stage || "").toUpperCase() === "INTERVIEW";
         return (
           <Space>
             <Link href={`/recruitment/applicant/${row?.id}`}>
@@ -449,51 +344,12 @@ export default function Content() {
                 <Button type="default" icon={<EyeOutlined />} />
               </Tooltip>
             </Link>
-            {isInterview && (
-              <Tooltip title="View evaluator scores">
-                <Button
-                  type="primary"
-                  icon={<LineChartOutlined />}
-                  onClick={() => {
-                    setChartRow(row);
-                    setChartOpen(true);
-                  }}
-                />
-              </Tooltip>
-            )}
           </Space>
         );
       },
     },
   ];
 
-  // ---------- DATA MODAL: OVERALL SCORE PER EVALUATOR UNTUK SATU KANDIDAT ----------
-  const perEvaluatorScores = useMemo(() => {
-    if (!chartRow) return [];
-    const assignments = Array.isArray(chartRow.evaluatorAssignment)
-      ? chartRow.evaluatorAssignment
-      : [];
-
-    const items = assignments
-      .map((ea) => {
-        const score =
-          typeof ea?.overallScore === "number" ? ea.overallScore : null;
-        if (score == null) return null;
-        const label =
-          ea?.evaluator?.name ||
-          `Evaluator ${ea?.id?.slice?.(0, 6) ?? ""}`.trim();
-        return { label, score };
-      })
-      .filter((x): x is { label: string; score: number } => !!x);
-
-    return items;
-  }, [chartRow]);
-
-  // const avgScore = useMemo(() => {
-  //   if (!perEvaluatorScores.length) return null;
-  //   const sum = perEvaluatorScores.reduce((a, b) => a + b.score, 0);
-  //   return sum / perEvaluatorScores.length;
-  // }, [perEvaluatorScores]);
 
   return (
     <>
@@ -517,13 +373,6 @@ export default function Content() {
                   onChange={(v) => setChartRange((v as [Dayjs, Dayjs]) || null)}
                   allowClear
                 />
-                <Button
-                  type="primary"
-                  icon={<LineChartOutlined />}
-                  onClick={() => setTopModalOpen(true)}
-                >
-                  Top Candidate
-                </Button>
               </Space>
             }
           >
@@ -626,137 +475,6 @@ export default function Content() {
           </Card>
         </Col>
 
-        {/* MODAL: OVERALL SCORE PER EVALUATOR (klik button “Chart” di tabel) */}
-        <Modal
-          open={chartOpen}
-          onCancel={() => setChartOpen(false)}
-          footer={null}
-          title={
-            <Space>
-              <LineChartOutlined />
-              <span>Evaluator Overall Scores — {chartRow?.user?.name}</span>
-            </Space>
-          }
-          width={820}
-        >
-          {!perEvaluatorScores.length ? (
-            <Empty description="No evaluator scores yet" />
-          ) : (
-            <div style={{ width: "100%", height: 360 }}>
-              <ResponsiveContainer>
-                <BarChart
-                  data={perEvaluatorScores}
-                  margin={{ top: 8, right: 16, left: 0, bottom: 24 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="label"
-                    interval={0}
-                    angle={-20}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis domain={[0, 100]} allowDecimals={false} />
-                  <RTooltip
-                    formatter={(v, n) =>
-                      n === "score"
-                        ? [`${v}`, "Overall Score"]
-                        : [String(v), n as string]
-                    }
-                  />
-                  <Bar dataKey="score" />
-                  {(() => {
-                    const avg =
-                      perEvaluatorScores.reduce((a, b) => a + b.score, 0) /
-                      perEvaluatorScores.length;
-                    return (
-                      <ReferenceLine
-                        y={avg}
-                        label={{
-                          value: `Avg ${Math.round(avg)}`,
-                          position: "right",
-                        }}
-                      />
-                    );
-                  })()}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </Modal>
-
-        {/* MODAL: TOP CANDIDATE (tidak mengubah chart atas, hanya pop-up tambahan) */}
-        <Modal
-          open={topModalOpen}
-          onCancel={() => setTopModalOpen(false)}
-          footer={null}
-          title={
-            <Space>
-              <LineChartOutlined />
-              <span>Top Candidate — Overall Score (Interview)</span>
-            </Space>
-          }
-          width={920}
-        >
-          {!topChartData.length ? (
-            <Empty description="Belum ada skor Interview pada rentang ini" />
-          ) : (
-            <>
-              <div style={{ marginBottom: 8 }}>
-                <Text>
-                  Showing top {topChartData.length} candidates based on their
-                  average overall scores from evaluators. 
-                </Text>
-              </div>
-              <div style={{ width: "100%", height: 400 }}>
-                <ResponsiveContainer>
-                  <BarChart
-                    data={topChartData.map((x) => ({
-                      name: x.name,
-                      email: x.email,
-                      avgScore: x.avgScore,
-                      count: x.evaluatorCount,
-                    }))}
-                    margin={{ top: 8, right: 16, left: 0, bottom: 24 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="name"
-                      interval={0}
-                      angle={-20}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis domain={[0, 100]} allowDecimals={false} />
-                    <RTooltip
-                      formatter={(v: any, n: any, props: any) => {
-                        if (n === "avgScore") {
-                          const p = props?.payload;
-                          return [
-                            `${Math.round(v)} (avg) — ${p?.count} eval`,
-                            p?.name,
-                          ];
-                        }
-                        return [String(v), n as string];
-                      }}
-                      labelFormatter={(label) => `Candidate: ${label}`}
-                    />
-                    <Bar dataKey="avgScore" />
-                    {typeof globalAvgTop === "number" && (
-                      <ReferenceLine
-                        y={globalAvgTop}
-                        label={{
-                          value: `Avg ${Math.round(globalAvgTop)}`,
-                          position: "right",
-                        }}
-                      />
-                    )}
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </>
-          )}
-        </Modal>
       </Row>
     </>
   );

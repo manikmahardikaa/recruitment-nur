@@ -240,11 +240,7 @@ export default function CandidatesPage() {
       {/* RIGHT */}
       <Col xs={24} md={16}>
         <Card style={{ height: "100%" }}>
-          <CandidateOverview
-            candidate={selected}
-            onCreateMbtiTest={() => {}}
-            isCreatingMbtiTest={false}
-          />
+            <CandidateOverview candidate={selected} />
         </Card>
       </Col>
     </Row>

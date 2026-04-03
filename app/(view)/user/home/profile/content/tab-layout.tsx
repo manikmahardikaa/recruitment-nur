@@ -46,12 +46,10 @@ export default function TabLayout() {
       detailUserData?.curiculum_vitae_url,
       detailUserData?.photo_url,
       detailUserData?.portfolio_url,
-      detailUserData?.interestTags,
       detailUserData?.gender,
     ],
     [
       detailUserData?.address,
-      detailUserData?.interestTags,
       detailUserData?.curiculum_vitae_url,
       detailUserData?.date_of_birth,
       detailUserData?.email,

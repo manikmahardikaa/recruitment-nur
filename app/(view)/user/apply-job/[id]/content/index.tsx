@@ -25,7 +25,7 @@ import {
 import dayjs from "dayjs";
 import axios from "axios";
 
-import { useJob, useReferralJob } from "@/app/hooks/job";
+import { useJob } from "@/app/hooks/job";
 import { useCandidates } from "@/app/hooks/applicant";
 import { useMobile } from "@/app/hooks/use-mobile";
 import { sanitizeHtml } from "@/app/utils/sanitize-html";
@@ -84,17 +84,14 @@ function SectionHeader({
 
 /* ------------------------------- Page ----------------------------------- */
 export default function ApplyJobContent() {
-  const { id, code } = useParams() as { id?: string; code?: string };
+  const { id } = useParams() as { id?: string };
   const router = useRouter();
   const { data: session, status } = useSession();
   const { data, fetchLoading: isJobLoading } = useJob({ id: id ?? "" });
-  const { data: referralData, fetchLoading: isReferralLoading } =
-    useReferralJob({ code: code ?? "" });
   const isMobile = useMobile();
-  const isReferral = Boolean(code && !id);
-  const jobData = isReferral ? referralData?.job : data;
-  const jobId = id ?? referralData?.job?.id;
-  const isLoading = isReferral ? isReferralLoading : isJobLoading;
+  const jobData = data;
+  const jobId = id;
+  const isLoading = isJobLoading;
   const { onCreate: createApplicant, onCreateLoading: isApplying } =
     useCandidates({ disableNotification: true });
 

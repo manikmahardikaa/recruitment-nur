@@ -12,11 +12,9 @@ import {
 } from "antd";
 import {
   MoreOutlined,
-  ThunderboltOutlined,
   EnvironmentOutlined,
   ClockCircleOutlined,
   DollarOutlined,
-  LinkOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { JobDataModel } from "@/app/models/job";
@@ -28,8 +26,6 @@ type Props = {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onTogglePublish: (id: string, next: boolean) => void;
-  goToPage: () => void;
-  onShowRecommendations: (job: JobDataModel) => void;
 };
 
 const EMPLOYMENT_LABEL: Record<string, string> = {
@@ -46,19 +42,7 @@ const WORK_TYPE_LABEL: Record<string, string> = {
   REMOTE: "Remote",
 };
 
-const POSTER_ENDPOINT = "/api/admin/dashboard/job/generate-desain";
 
-const DEFAULT_POSTER_REQUIREMENTS = [
-  "Pendidikan minimal SMA/sederajat",
-  "Menguasai Figma / Illustrator / Photoshop",
-  "Punya portofolio desain",
-  "Mampu kerja dengan deadline",
-];
-
-const DEFAULT_POSTER_THEME = {
-  primary: "#1D4ED8",
-  secondary: "#F4C95D",
-};
 
 function formatCurrency(value?: number | null) {
   if (value === null || value === undefined) return "-";
@@ -84,42 +68,14 @@ function formatSalaryRange(min?: number | null, max?: number | null) {
   return `${formatCurrency(min)} - ${formatCurrency(max)}`;
 }
 
-function buildPosterPayload(job: JobDataModel) {
-  return {
-    badgeLeft: "Pekerjaan untuk",
-    badgeRight: "OSS Bali",
-    headline: "Lowongan Pekerjaan!",
-    role: job.job_title || "Desain Grafis",
-    requirements: DEFAULT_POSTER_REQUIREMENTS,
-    ctaTitle: "Kirimkan CV dan Portofolio",
-    contact: "hr@onestepsolutionbali.com",
-    theme: DEFAULT_POSTER_THEME,
-  };
-}
 
-async function generateJobPoster(job: JobDataModel) {
-  const res = await fetch(POSTER_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(buildPosterPayload(job)),
-  });
 
-  if (!res.ok) {
-    throw new Error("Failed to generate job poster.");
-  }
-
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  return url;
-}
 
 export default function JobCard({
   job,
   onEdit,
   onDelete,
   onTogglePublish,
-  goToPage,
-  onShowRecommendations,
 }: Props) {
   const published = Boolean(job.is_published);
   const menu = {
@@ -140,17 +96,7 @@ export default function JobCard({
   const salaryLabel = job.show_salary
     ? formatSalaryRange(job.salary_min, job.salary_max)
     : "Hidden for candidates";
-  const typeLabel = job.type_job === "REFFERAL" ? "Referral" : "Team Member";
   const salaryPrefix = job.type_job === "REFFERAL" ? "Reward" : "Salary";
-  const referralCode = job.referralLinks?.[0]?.code;
-  const referralPath = referralCode ? `/apply/ref/${referralCode}` : "";
-  const referralShortPath = referralCode ? `/ref/${referralCode}` : "";
-  const origin =
-    typeof window !== "undefined" ? window.location.origin : "";
-  const referralUrl =
-    referralPath && origin ? `${origin}${referralPath}` : referralPath;
-  const referralShortUrl =
-    referralShortPath && origin ? `${origin}${referralShortPath}` : referralShortPath;
 
   return (
     <Card style={{ borderRadius: 12 }} bodyStyle={{ padding: 16 }}>
@@ -190,24 +136,6 @@ export default function JobCard({
                 {salaryPrefix}: {salaryLabel}
               </Text>
             </Space>
-            {job.type_job === "REFFERAL" && (
-              <Space size="small">
-                <LinkOutlined />
-                <Text type="secondary">Referral link:</Text>
-                {referralCode ? (
-                  <Text copyable={{ text: referralUrl }}>
-                    {referralPath}
-                  </Text>
-                ) : (
-                  <Text type="secondary">Not generated</Text>
-                )}
-                {referralCode && (
-                  <Text copyable={{ text: referralShortUrl }}>
-                    {referralShortPath}
-                  </Text>
-                )}
-              </Space>
-            )}
           </Space>
         </Space>
 

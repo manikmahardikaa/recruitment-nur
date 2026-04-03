@@ -84,17 +84,6 @@ export default function DetailCandidateContent() {
               <Tag color="geekblue">{data.role}</Tag>
             </Space>
             <Text type="secondary">{data.email}</Text>
-            <Space size={[8, 8]} wrap>
-              {(data.interestTags ?? []).length ? (
-                data.interestTags.map((interest) => (
-                  <Tag key={`${data.id}-${interest.interest}`} color="blue">
-                    {interest.interest}
-                  </Tag>
-                ))
-              ) : (
-                <Text type="secondary">No interest tags added yet</Text>
-              )}
-            </Space>
           </Space>
         </Space>
       </Card>

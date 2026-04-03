@@ -7,7 +7,6 @@ import {
   JobPayloadCreateModel,
   JobPayloadUpdateModel,
 } from "@/app/models/job";
-import { ReferralJobDataModel } from "@/app/models/referral-link";
 
 const baseUrl = "/api/admin/dashboard/job";
 const entity = "job";
@@ -108,21 +107,5 @@ export const useJob = ({ id }: { id: string }) => {
     onUpdateLoading,
     onPublish,
     onPublishLoading,
-  };
-};
-
-export const useReferralJob = ({ code }: { code: string }) => {
-  const { data, isLoading: fetchLoading } = useQuery({
-    queryKey: ["referral-job", code],
-    queryFn: async () => {
-      const result = await axios.get(`/api/public/referral/${code}`);
-      return result.data.result as ReferralJobDataModel;
-    },
-    enabled: Boolean(code),
-  });
-
-  return {
-    data,
-    fetchLoading,
   };
 };

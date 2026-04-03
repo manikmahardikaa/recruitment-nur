@@ -1,7 +1,6 @@
 import { Prisma, RecruitmentStage } from "@prisma/client";
 
 import { db } from "@/lib/prisma";
-import generateCodeUnique from "@/app/utils/generate_code_unique";
 import {
   JobDataModel,
   JobPayloadCreateModel,
@@ -25,17 +24,13 @@ const CONNECTED_STAGES: RecruitmentStage[] = [
 function buildStats(
   applicants: Array<{
     stage: RecruitmentStage | null;
-    Conversation: { id: string }[];
   }>,
 ): JobStats {
-  let chatStarted = 0;
+  const chatStarted = 0;
   let connected = 0;
   let notSuitable = 0;
 
   applicants.forEach((app) => {
-    if (Array.isArray(app.Conversation) && app.Conversation.length > 0) {
-      chatStarted += 1;
-    }
     if (app.stage && CONNECTED_STAGES.includes(app.stage)) {
       connected += 1;
     }
@@ -49,7 +44,6 @@ function buildStats(
 
 const selectApplicantsForStats = {
   stage: true,
-  Conversation: { select: { id: true } },
 };
 
 export const GET_JOBS = async (
@@ -106,11 +100,6 @@ export const GET_JOB = async (id: string) => {
       Applicant: {
         select: selectApplicantsForStats,
       },
-      referralLinks: {
-        where: { is_active: true },
-        orderBy: { createdAt: "desc" },
-        take: 1,
-      },
     },
   });
 
@@ -122,101 +111,23 @@ export const GET_JOB = async (id: string) => {
   };
 };
 export const CREATE_JOB = async (payload: JobPayloadCreateModel) => {
-  const result = await db.$transaction(async (tx) => {
-    const job = await tx.job.create({
-      data: payload,
-      include: { location: true },
-    });
-
-    if (payload.type_job === "REFFERAL") {
-      const MAX_RETRIES = 5;
-      let created = false;
-      for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
-        const code = generateCodeUnique(job.job_title, 8);
-        try {
-          await tx.referralLink.create({
-            data: {
-              job_id: job.id,
-              code,
-              source: "auto",
-            },
-          });
-          created = true;
-          break;
-        } catch (error) {
-          if (
-            error instanceof Prisma.PrismaClientKnownRequestError &&
-            error.code === "P2002"
-          ) {
-            continue;
-          }
-          throw error;
-        }
-      }
-      if (!created) {
-        throw new Error("Failed to generate referral link");
-      }
-    }
-
-    return job;
+  return db.job.create({
+    data: payload,
+    include: { location: true },
   });
-
-  return result;
 };
 
 export const UPDATE_JOB = async (
   id: string,
   payload: JobPayloadUpdateModel,
 ) => {
-  const result = await db.$transaction(async (tx) => {
-    const job = await tx.job.update({
-      where: {
-        id,
-      },
-      data: payload,
-      include: { location: true },
-    });
-
-    if (job.type_job === "REFFERAL") {
-      const existing = await tx.referralLink.findFirst({
-        where: { job_id: job.id, is_active: true },
-        select: { id: true },
-      });
-      if (!existing) {
-        const MAX_RETRIES = 5;
-        let created = false;
-        for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
-          const code = generateCodeUnique(job.job_title, 8);
-          try {
-            await tx.referralLink.create({
-              data: {
-                job_id: job.id,
-                code,
-                source: "auto",
-              },
-            });
-            created = true;
-            break;
-          } catch (error) {
-            if (
-              error instanceof Prisma.PrismaClientKnownRequestError &&
-              error.code === "P2002"
-            ) {
-              continue;
-            }
-            throw error;
-          }
-        }
-        if (!created) {
-          throw new Error("Failed to generate referral link");
-        }
-      }
-    }
-
-    return job;
+  return db.job.update({
+    where: {
+      id,
+    },
+    data: payload,
+    include: { location: true },
   });
-
-  return result;
 };
 
 export const DELETE_JOB = async (id: string) => {

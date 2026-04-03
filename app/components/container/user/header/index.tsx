@@ -73,8 +73,7 @@ export default function MainHeader({
   };
   const hideBackLink =
     pathname === "/user" ||
-    pathname.startsWith("/user/job") ||
-    pathname === "/user/home/apply-job/detail/employee-setup";
+    pathname.startsWith("/user/job");
 
   const isUserRoot = pathname === "/user";
 

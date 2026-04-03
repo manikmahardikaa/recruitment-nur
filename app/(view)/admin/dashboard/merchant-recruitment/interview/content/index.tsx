@@ -20,9 +20,7 @@ import { reorderImmutable } from "@/app/utils/reoder";
 import DraggableCandidateItem from "@/app/utils/dnd-helper";
 import { useCandidate, useCandidates } from "@/app/hooks/applicant";
 import { RecruitmentStage } from "@prisma/client";
-import InterviewCandidate from "./InterviewCandidate";
 import { useRecruitment } from "../../context";
-import { useScheduleInterview } from "@/app/hooks/interview";
 import { ApplicantDataModel } from "@/app/models/applicant";
 import {
   SUMMARY_STAGE_CONFIG,
@@ -53,10 +51,6 @@ export default function CandidatesPage() {
     useRecruitment();
   const searchParams = useSearchParams();
   const merchantId = searchParams.get("merchant_id") || undefined;
-
-  const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
-    null
-  );
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -174,17 +168,6 @@ export default function CandidatesPage() {
     return () => setOnUpdateStatus(undefined);
   }, [setOnUpdateStatus, updateStatus]);
 
-  const {
-    listData = [],
-    listLoading,
-    // onUpdate: onUpdateInterview,
-    // refetchList,
-  } = useScheduleInterview({
-    id: selectedScheduleId ?? "",
-    applicant_id: selected?.id,
-  });
-  console.log("listData", listData);
-
   // const handleCreateInterview = async (
   //   values: ScheduleInterviewPayloadCreateModel
   // ) => {
@@ -295,19 +278,10 @@ export default function CandidatesPage() {
       <Col xs={24} md={16}>
         <Space direction="vertical" size={16} style={{ display: "flex" }}>
           <Card style={{ height: "100%" }}>
-            <CandidateOverview
-              candidate={selected}
-              onCreateMbtiTest={() => {}}
-              isCreatingMbtiTest={false}
-            />
+            <CandidateOverview candidate={selected} />
           </Card>
           <Card style={{ height: "100%" }}>
-            <InterviewCandidate
-              candidate={selected}
-              selectedScheduleId={selectedScheduleId}
-              listData={listData}
-              listLoading={listLoading}
-            />
+            <Empty description="Interview schedule is not available." />
           </Card>
         </Space>
       </Col>

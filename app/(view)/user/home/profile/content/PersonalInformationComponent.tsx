@@ -40,11 +40,6 @@ export default function PersonalInformationDocuments({ loading }: SubmitProps) {
   const updateUser = async (values: UserPayloadUpdateModel) => {
     const payload: UserPayloadUpdateModel = {
       ...values,
-      interestTags: Array.isArray(values.interestTags)
-        ? values.interestTags
-            .map((tag) => (typeof tag === "string" ? tag.trim() : ""))
-            .filter((tag) => tag.length > 0)
-        : undefined,
     };
 
     const dobValue = values.date_of_birth;
@@ -87,8 +82,6 @@ export default function PersonalInformationDocuments({ loading }: SubmitProps) {
       address: detailUserData.address ?? undefined,
       no_identity: detailUserData.no_identity ?? undefined,
       gender: detailUserData.gender ?? undefined,
-      interestTags:
-        detailUserData.interestTags?.map((tag) => tag.interest) ?? [],
     } as unknown as UserPayloadUpdateModel;
   }, [detailUserData]);
 
@@ -128,22 +121,6 @@ export default function PersonalInformationDocuments({ loading }: SubmitProps) {
               ]}
             >
               <Input prefix={<UserOutlined />} placeholder="Full Name" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={[16, 8]}>
-          <Col xs={24}>
-            <Form.Item
-              label="Professional Interests"
-              name="interestTags"
-              tooltip="Share preferred roles or skills. Add multiple interests using commas."
-            >
-              <Select
-                mode="tags"
-                placeholder="e.g. Frontend, Data Analyst, HR"
-                tokenSeparators={[","]}
-              />
             </Form.Item>
           </Col>
         </Row>

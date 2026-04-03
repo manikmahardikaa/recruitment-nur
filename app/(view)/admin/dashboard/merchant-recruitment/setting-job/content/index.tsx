@@ -12,7 +12,6 @@ import CustomButton from "@/app/components/common/custom-buttom";
 import JobModal from "@/app/components/common/modal/admin/job";
 import JobCard from "./JobCards";
 import { useRouter, useSearchParams } from "next/navigation";
-import ModalRecommendedCandidate from "./ModalRecommendedCandidate";
 import { buildJobPayload } from "@/app/(view)/admin/dashboard/merchant-recruitment/setting-job/utils";
 
 const { Text } = Typography;
@@ -22,7 +21,6 @@ export default function SettingJobContent() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<"create" | "update">("create");
   const [selectedJob, setSelectedJob] = useState<JobDataModel | null>(null);
-  const [recommendedJob, setRecommendedJob] = useState<JobDataModel | null>(null);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"all" | "active" | "inactive" | "draft">(
     "all"
@@ -31,14 +29,6 @@ export default function SettingJobContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const merchantId = searchParams.get("merchant_id");
-
-  const goToManageCandidate = (jobId: string) => {
-    router.push(
-      `/admin/dashboard/merchant-recruitment/setting-job/manage-candidates?job_id=${encodeURIComponent(
-        jobId
-      )}${merchantId ? `&merchant_id=${encodeURIComponent(merchantId)}` : ""}`
-    )
-  };
 
   const queryString = merchantId
     ? `merchant_id=${encodeURIComponent(merchantId)}`
@@ -213,8 +203,6 @@ export default function SettingJobContent() {
               onEdit={handleEdit}
               onDelete={onDeleteJob}
               onTogglePublish={handleTogglePublish}
-              goToPage={() => goToManageCandidate(job.id)}
-              onShowRecommendations={(job) => setRecommendedJob(job)}
             />
           ))}
         </div>
@@ -238,12 +226,6 @@ export default function SettingJobContent() {
         loadingUpdate={jobLoadingUpdate}
       />
 
-      <ModalRecommendedCandidate
-        open={Boolean(recommendedJob)}
-        jobId={recommendedJob?.id}
-        jobName={recommendedJob?.job_title}
-        onClose={() => setRecommendedJob(null)}
-      />
     </div>
   );
 }

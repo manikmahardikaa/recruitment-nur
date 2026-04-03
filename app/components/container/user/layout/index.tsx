@@ -16,7 +16,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { LogoutOutlined } from "@ant-design/icons";
 import { signOut } from "next-auth/react";
 import getInitials from "@/app/utils/initials-username";
-import { useChatUnread } from "@/app/hooks/chat";
 import { SidebarMainUser } from "@/app/data/user/main/sidebar-data";
 import { SidebarSettingUser } from "@/app/data/user/setting/sidebar-data";
 import { useMemo } from "react";
@@ -39,11 +38,9 @@ export default function UserLayout({
   const isMobile = !screens.md;
 
   const showHeaderHome =
-    pathname === "/user" ||
-    pathname.startsWith("/user/home/apply-job/detail/employee-setup");
+    pathname === "/user";
   const showHeaderDashboard =
-    pathname.startsWith("/user/home") &&
-    !pathname.startsWith("/user/home/apply-job/detail/employee-setup");
+    pathname.startsWith("/user/home");
   const showHeaderApplyJob = pathname.startsWith("/user/apply-job");
   const showHeaderJob = pathname.startsWith("/user/job");
 

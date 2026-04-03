@@ -21,11 +21,7 @@ export default function HiredCandidate({ candidate }: Props) {
 
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
-      <CandidateOverview
-        candidate={candidate}
-        onCreateMbtiTest={() => {}}
-        isCreatingMbtiTest={false}
-      />
+        <CandidateOverview candidate={candidate} />
       <Row gutter={[16, 16]}>
         <Col xs={24}>
           <Card style={{ borderRadius: 14 }}>
