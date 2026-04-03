@@ -1,9 +1,6 @@
-"use client";
-
 import Loading from "@/app/components/common/custom-loading";
-import { Suspense, lazy } from "react";
-
-const ProfileContent = lazy(() => import("./content"));
+import { Suspense } from "react";
+import ProfileContent from "./content";
 
 export default function Profile() {
   return (

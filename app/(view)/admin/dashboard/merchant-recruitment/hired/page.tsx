@@ -1,7 +1,5 @@
-"use client";
-
-import { Suspense, lazy } from "react";
-const HiredContent = lazy(() => import("./content"));
+import { Suspense } from "react";
+import HiredContent from "./content";
 
 export default function Hired() {
   return (

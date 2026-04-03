@@ -1,8 +1,6 @@
-"use client"
-
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
 import Loading from "@/app/components/common/custom-loading";
-const ListMerchantComponent = lazy(() => import("./content"));
+import ListMerchantComponent from "./content";
 
 export default function ListMerchant() {
     return <Suspense fallback={<Loading />}>

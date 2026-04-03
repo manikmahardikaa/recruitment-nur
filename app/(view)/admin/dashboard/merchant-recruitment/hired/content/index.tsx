@@ -30,7 +30,6 @@ import {
   toRecruitmentStage,
 } from "@/app/utils/recruitment-stage";
 import type { SummaryStageKey } from "@/app/utils/recruitment-stage";
-import { useSearchParams } from "next/navigation";
 
 const { Title, Text } = Typography;
 
@@ -53,8 +52,13 @@ export default function CandidatesPage() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const searchParams = useSearchParams();
-  const merchantId = searchParams.get("merchant_id") || undefined;
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  const merchantId = searchParams?.get("merchant_id") || undefined;
 
   const { data: candidatesData = [] } = useCandidates({
     queryString: merchantId

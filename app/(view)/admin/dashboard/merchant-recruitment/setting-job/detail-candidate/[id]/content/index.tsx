@@ -1,3 +1,5 @@
+"use client"
+
 import { useUser } from "@/app/hooks/user";
 import {
   CalendarOutlined,

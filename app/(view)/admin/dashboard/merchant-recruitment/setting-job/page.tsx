@@ -1,9 +1,6 @@
-"use client";
-
 import Loading from "@/app/components/common/custom-loading";
-import { Suspense, lazy } from "react";
-
-const SettingJobContent = lazy(() => import("./content"));
+import { Suspense } from "react";
+import SettingJobContent from "./content";
 
 export const dynamic = "force-dynamic";
 

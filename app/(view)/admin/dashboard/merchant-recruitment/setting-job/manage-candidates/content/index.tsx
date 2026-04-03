@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import {
   Row,
   Col,
@@ -84,8 +83,13 @@ type DateValue = string | number | Date | Dayjs | null | undefined;
 const INITIAL_TABLE_FILTERS: LiveValues = { stage: "ALL" };
 
 export default function Content() {
-  const params = useSearchParams();
-  const jobId = params.get("job_id") ?? "";
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  const jobId = searchParams?.get("job_id") ?? "";
 
   const { data, fetchLoading, error } = useCandidateByJobId({ id: jobId });
 

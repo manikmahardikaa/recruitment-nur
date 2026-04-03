@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Alert, Button, Form, Input, notification } from "antd";
 import Image from "next/image";
 
@@ -16,14 +16,18 @@ type ResetPasswordFormValues = {
 
 export default function ResetPasswordContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm<ResetPasswordFormValues>();
 
-  const email = useMemo(() => searchParams.get("email")?.trim() ?? "", [
+  const email = useMemo(() => searchParams?.get("email")?.trim() ?? "", [
     searchParams,
   ]);
-  const token = useMemo(() => searchParams.get("token")?.trim() ?? "", [
+  const token = useMemo(() => searchParams?.get("token")?.trim() ?? "", [
     searchParams,
   ]);
   const isReady = Boolean(email && token);

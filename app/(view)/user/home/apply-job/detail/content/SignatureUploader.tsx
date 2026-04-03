@@ -2,7 +2,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Space, Typography, message } from "antd";
-import { createClient } from "@supabase/supabase-js";
 import {
   UndoOutlined,
   ClearOutlined,
@@ -26,9 +25,7 @@ type Props = {
   height?: number;
 };
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { getSupabaseClient } from "@/app/vendor/supabase-client";
 
 function drawStroke(ctx: CanvasRenderingContext2D, stroke: Stroke) {
   if (!stroke.length) return;
@@ -295,6 +292,7 @@ export default function SignaturePadUploader({
   };
 
   const uploadToSupabase = async (blob: Blob) => {
+    const supabase = getSupabaseClient();
     const safeFolder = folder.replace(/^\/*/, "").replace(/\.\./g, "");
     const fileName = `signature-${Date.now()}.png`;
     const path = `${safeFolder}/${fileName}`;

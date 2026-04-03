@@ -16,7 +16,7 @@ import {
   UploadProps,
 } from "antd";
 import type { UploadRequestOption as RcCustomRequestOptions } from "rc-upload/lib/interface";
-import { supabase } from "@/app/vendor/supabase-client";
+import { getSupabaseClient } from "@/app/vendor/supabase-client";
 
 const { Text } = Typography;
 const { Dragger } = Upload;
@@ -150,6 +150,7 @@ export default function SupaFileUploader({
     onError,
   }: RcCustomRequestOptions) => {
     try {
+      const supabase = getSupabaseClient();
       if (typeof file === "string" || !(file instanceof File)) {
         throw new Error("Invalid upload file.");
       }
@@ -195,6 +196,7 @@ export default function SupaFileUploader({
   };
 
   const handleDelete = async () => {
+    const supabase = getSupabaseClient();
     if (!preview?.path && !preview?.url) {
       onChange?.(null);
       setPreview(null);

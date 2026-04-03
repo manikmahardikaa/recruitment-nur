@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Flex, Form, Input, Tabs, Typography, Empty, message } from "antd";
 import Title from "antd/es/typography/Title";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
@@ -11,7 +11,7 @@ import { JobDataModel, JobPayloadUpdateModel } from "@/app/models/job";
 import CustomButton from "@/app/components/common/custom-buttom";
 import JobModal from "@/app/components/common/modal/admin/job";
 import JobCard from "./JobCards";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { buildJobPayload } from "@/app/(view)/admin/dashboard/merchant-recruitment/setting-job/utils";
 
 const { Text } = Typography;
@@ -27,8 +27,13 @@ export default function SettingJobContent() {
   );
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const merchantId = searchParams.get("merchant_id");
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  const merchantId = searchParams?.get("merchant_id");
 
   const queryString = merchantId
     ? `merchant_id=${encodeURIComponent(merchantId)}`

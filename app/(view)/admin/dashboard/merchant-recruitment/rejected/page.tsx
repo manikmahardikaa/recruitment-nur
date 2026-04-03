@@ -1,7 +1,5 @@
-'use client'
-
-import { Suspense, lazy } from "react"
-const RejectedContent = lazy(() => import("./content"));
+import { Suspense } from "react";
+import RejectedContent from "./content";
 
 export default function Rejected() {
   return (

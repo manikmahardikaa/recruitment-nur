@@ -27,7 +27,6 @@ import {
 } from "@/app/utils/recruitment-stage";
 import type { SummaryStageKey } from "@/app/utils/recruitment-stage";
 import { ApplicantDataModel } from "@/app/models/applicant";
-import { useSearchParams } from "next/navigation";
 import CandidateOverview from "../../screening/content/CandidateOverview";
 
 const { Title, Text } = Typography;
@@ -49,8 +48,13 @@ export default function CandidatesPage() {
   const { setSummary, setSectionTitle, setSectionSubtitle, setOnUpdateStatus } =
     useRecruitment();
 
-  const searchParams = useSearchParams();
-  const merchantId = searchParams.get("merchant_id") || undefined;
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  const merchantId = searchParams?.get("merchant_id") || undefined;
 
   const { data: candidatesData = [] } = useCandidates({
     queryString: merchantId

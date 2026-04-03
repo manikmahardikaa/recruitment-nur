@@ -1,9 +1,9 @@
 // admin/dashboard/recruitment/components/HeaderStatusCard.tsx
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card } from "antd";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useDrop } from "react-dnd";
 import { useRecruitment } from "../../context";
 import { DND_ITEM } from "@/app/utils/types";
@@ -21,8 +21,13 @@ export default function HeaderStatusCard({
   active: boolean;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const merchantId = searchParams.get("merchant_id");
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  const merchantId = searchParams?.get("merchant_id");
   const { onUpdateStatus } = useRecruitment();
 
   const basePath = (() => {

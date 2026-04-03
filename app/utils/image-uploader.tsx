@@ -3,7 +3,7 @@ import { DeleteOutlined, InboxOutlined } from "@ant-design/icons";
 import { Button, message, Upload, Popconfirm, UploadProps, Image } from "antd";
 import { UploadRequestOption as RcCustomRequestOptions } from "rc-upload/lib/interface";
 import React, { CSSProperties, useEffect, useState } from "react";
-import { supabase } from "@/app/vendor/supabase-client";
+import { getSupabaseClient } from "@/app/vendor/supabase-client";
 
 type Variant = "thumbnail" | "profile";
 
@@ -76,6 +76,7 @@ export default function SupaImageUploader({
     onError,
   }: RcCustomRequestOptions) => {
     try {
+      const supabase = getSupabaseClient();
       if (!(file instanceof File)) throw new Error("File upload tidak valid");
       if (!bucket) throw new Error("Nama bucket wajib diisi");
 
@@ -106,6 +107,7 @@ export default function SupaImageUploader({
   };
 
   const handleDelete = async () => {
+    const supabase = getSupabaseClient();
     if (!previewImage?.path && !previewImage?.url) {
       onChange?.(null);
       setPreviewImage(null);

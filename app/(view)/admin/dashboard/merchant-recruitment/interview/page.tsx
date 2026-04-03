@@ -1,8 +1,5 @@
-"use client";
-
-import { Suspense, lazy } from "react";
-
-const InterviewContent = lazy(() => import("./content"));
+import { Suspense } from "react";
+import InterviewContent from "./content";
 
 export default function Interview() {
   return (

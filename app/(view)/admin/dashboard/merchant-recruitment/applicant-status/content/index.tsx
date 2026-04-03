@@ -28,7 +28,6 @@ import { HistoryCandidateDataModel } from "@/app/models/history-candidate";
 import ListMerchantComponent from "../../content";
 import Columns from "./columns";
 import { getStageLabel, stageMatches } from "@/app/utils/recruitment-stage";
-import { useSearchParams } from "next/navigation";
 import { useRecruitment } from "../../context";
 
 const { Text } = Typography;
@@ -321,8 +320,13 @@ function ApplicantList({ merchantId }: { merchantId: string }) {
 }
 
 export default function Content() {
-  const searchParams = useSearchParams();
-  const merchantId = searchParams.get("merchant_id") || "";
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  const merchantId = searchParams?.get("merchant_id") || "";
 
   if (!merchantId) {
     return <ListMerchantComponent />;

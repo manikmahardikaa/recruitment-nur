@@ -7,20 +7,24 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Session } from "next-auth";
 import { getSession, signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 import styles from "../../auth.module.css";
 
 export default function LoginContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (values: UserFormModel) => {
     try {
       setLoading(true);
-      const rawCallbackUrl = searchParams.get("callbackUrl");
+      const rawCallbackUrl = searchParams?.get("callbackUrl");
       const safeCallbackUrl =
         rawCallbackUrl &&
         rawCallbackUrl.startsWith("/") &&

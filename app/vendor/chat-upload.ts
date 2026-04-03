@@ -1,6 +1,6 @@
 "use client";
 
-import { supabase } from "./supabase-client";
+import { getSupabaseClient } from "./supabase-client";
 
 export type UploadedChatAttachment = {
   url: string;
@@ -18,6 +18,7 @@ function sanitizeFileName(name: string) {
 export async function uploadChatFiles(
   files: File[]
 ): Promise<UploadedChatAttachment[]> {
+  const supabase = getSupabaseClient();
   if (!files.length) return [];
 
   if (!CHAT_BUCKET) {
