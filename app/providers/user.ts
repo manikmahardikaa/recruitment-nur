@@ -1,6 +1,6 @@
 import db from "@/lib/prisma";
 import { UserPayloadCreateModel, UserPayloadUpdateModel } from "../models/user";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { GeneralError } from "@/app/utils/general-error";
 
 function normalizeDateInput(input: unknown): Date | null | undefined {
