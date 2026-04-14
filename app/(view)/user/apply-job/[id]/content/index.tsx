@@ -26,7 +26,10 @@ import dayjs from "dayjs";
 import axios from "axios";
 
 import { useJob } from "@/app/hooks/job";
-import { useCandidates } from "@/app/hooks/applicant";
+import {
+  useCandidateByUserId,
+  useCandidates,
+} from "@/app/hooks/applicant";
 import { useMobile } from "@/app/hooks/use-mobile";
 import { sanitizeHtml } from "@/app/utils/sanitize-html";
 import { toCapitalized } from "@/app/utils/capitalized";
@@ -94,6 +97,14 @@ export default function ApplyJobContent() {
   const isLoading = isJobLoading;
   const { onCreate: createApplicant, onCreateLoading: isApplying } =
     useCandidates({ disableNotification: true });
+  const { data: myApplicants = [] } = useCandidateByUserId({
+    id: session?.user?.id,
+  });
+
+  const isAlreadyApplied = useMemo(() => {
+    if (!session?.user?.id || !jobId) return false;
+    return myApplicants.some((app) => app.job_id === jobId);
+  }, [jobId, myApplicants, session?.user?.id]);
 
   const overviewHTML = useMemo(
     () => sanitizeHtml(jobData?.description ?? ""),
@@ -102,9 +113,14 @@ export default function ApplyJobContent() {
 
   const submitApplication = async () => {
     if (status === "loading") return;
-    if (!session?.user?.id) {
+    const userId = session?.user?.id;
+    if (!userId) {
       const target = id ? `/user/apply-job/${id}` : "/user/apply-job";
       router.push(`/login?callbackUrl=${encodeURIComponent(target)}`);
+      return;
+    }
+    if (isAlreadyApplied) {
+      message.warning("You have already applied for this job.");
       return;
     }
     if (!jobId) {
@@ -113,7 +129,7 @@ export default function ApplyJobContent() {
     }
     try {
       await createApplicant({
-        user_id: session.user.id,
+        user_id: userId,
         job_id: jobId,
       });
       message.success("Application submitted.");
@@ -332,6 +348,16 @@ export default function ApplyJobContent() {
                 Submit your application to let recruiters know you are
                 interested.
               </Text>
+              <div style={{ marginTop: 12 }}>
+                <Tag
+                  color={isAlreadyApplied ? "red" : "green"}
+                  style={{ borderRadius: 999, padding: "2px 10px" }}
+                >
+                  {isAlreadyApplied
+                    ? "Already applied"
+                    : "Eligible to apply"}
+                </Tag>
+              </div>
             </Col>
             <Col
               xs={24}
@@ -349,8 +375,9 @@ export default function ApplyJobContent() {
                 }}
                 onClick={submitApplication}
                 loading={isApplying}
+                disabled={isAlreadyApplied}
               >
-                Submit Application
+                {isAlreadyApplied ? "Already Applied" : "Submit Application"}
               </Button>
             </Col>
           </Row>

@@ -78,6 +78,16 @@ export default function DashboardContent() {
     return base;
   }, [candidates]);
 
+  type JobLite = {
+    id: string;
+    job_title?: string | null;
+    until_at?: string | Date | null;
+    is_published?: boolean;
+    merchant?: { name?: string | null } | null;
+  };
+
+  const jobList = (jobs ?? []) as JobLite[];
+
   const totalApplicants = candidates?.length ?? 0;
   const newThisWeek = useMemo(() => {
     if (!candidates) return 0;
@@ -87,16 +97,22 @@ export default function DashboardContent() {
     ).length;
   }, [candidates]);
 
-  const openJobs = jobs?.filter((job) => job.is_published).length ?? 0;
+  const isPublished = (job: unknown) =>
+    Boolean((job as { is_published?: boolean } | null | undefined)?.is_published);
+
+  const openJobs = jobList.filter((job) => isPublished(job)).length;
   const closingSoon = useMemo(() => {
-    if (!jobs) return 0;
-    return jobs.filter((job) =>
-      dayjs(job.until_at).isBefore(dayjs().add(7, "day"))
+    if (!jobList.length) return 0;
+    return jobList.filter((job) =>
+      dayjs(
+        (job as { until_at?: string | Date | null } | null | undefined)
+          ?.until_at
+      ).isBefore(dayjs().add(7, "day"))
     ).length;
-  }, [jobs]);
+  }, [jobList]);
 
   const topJobs = useMemo(() => {
-    if (!candidates || !jobs) return [];
+    if (!candidates || !jobList.length) return [];
     const counts = new Map<
       string,
       {
@@ -107,7 +123,7 @@ export default function DashboardContent() {
         isPublished: boolean;
       }
     >();
-    const jobsById = new Map(jobs.map((job) => [job.id, job]));
+    const jobsById = new Map(jobList.map((job) => [job.id, job]));
 
     candidates.forEach((candidate) => {
       const jobId = candidate.job?.id ?? candidate.job_id ?? "unassigned";
@@ -115,8 +131,7 @@ export default function DashboardContent() {
       const jobName =
         candidate.job?.job_title ?? jobFromList?.job_title ?? "Unassigned";
       const merchantName = candidate.merchant?.name ?? "—";
-      const published =
-        candidate.job?.is_published ?? jobFromList?.is_published ?? false;
+      const published = isPublished(candidate.job) || isPublished(jobFromList);
       const current = counts.get(jobId) ?? {
         id: jobId,
         name: jobName,
@@ -132,19 +147,19 @@ export default function DashboardContent() {
     });
 
     if (!counts.size) {
-      return jobs.slice(0, 5).map((job) => ({
+      return jobList.slice(0, 5).map((job) => ({
         id: job.id,
-        name: job.job_title,
+        name: job.job_title ?? "Unassigned",
         merchantName: job.merchant?.name ?? "—",
         applicants: 0,
-        isPublished: job.is_published,
+        isPublished: isPublished(job),
       }));
     }
 
     return [...counts.values()]
       .sort((a, b) => b.applicants - a.applicants)
       .slice(0, 5);
-  }, [candidates, jobs]);
+  }, [candidates, jobList]);
 
   const latestCandidates = useMemo(() => {
     if (!candidates) return [];

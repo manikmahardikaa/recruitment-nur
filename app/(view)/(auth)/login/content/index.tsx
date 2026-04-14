@@ -1,7 +1,6 @@
 "use client";
 
-import FormLogin from "@/app/components/common/form/login";
-import { UserFormModel } from "@/app/models/user";
+import FormLogin, { LoginFormValues } from "@/app/components/common/form/login";
 import { notification } from "antd";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,7 +20,7 @@ export default function LoginContent() {
   }, []);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (values: UserFormModel) => {
+  const handleLogin = async (values: LoginFormValues) => {
     try {
       setLoading(true);
       const rawCallbackUrl = searchParams?.get("callbackUrl");

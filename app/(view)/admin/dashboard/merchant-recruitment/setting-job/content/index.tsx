@@ -36,8 +36,8 @@ export default function SettingJobContent() {
   const merchantId = searchParams?.get("merchant_id");
 
   const queryString = merchantId
-    ? `merchant_id=${encodeURIComponent(merchantId)}`
-    : undefined;
+    ? `merchant_id=${encodeURIComponent(merchantId)}&draft=true`
+    : "draft=true";
   const {
     data: jobsData = [],
     onCreate: jobCreate,
@@ -55,8 +55,9 @@ export default function SettingJobContent() {
 
     const byTab = (j: JobDataModel) => {
       if (tab === "active") return j.is_published === true;
-      if (tab === "inactive") return j.is_published === false;
-      if (tab === "draft") return j.is_published === false;
+      if (tab === "draft") return j.is_draft === true;
+      if (tab === "inactive")
+        return j.is_published === false && j.is_draft === false;
       return true;
     };
 
@@ -176,7 +177,11 @@ export default function SettingJobContent() {
               <>
                 Inactive{" "}
                 <TagCount
-                  count={jobsData.filter((j) => !j.is_published).length}
+                  count={
+                    jobsData.filter(
+                      (j) => !j.is_published && j.is_draft === false
+                    ).length
+                  }
                 />
               </>
             ),
@@ -186,9 +191,7 @@ export default function SettingJobContent() {
             label: (
               <>
                 Drafts{" "}
-                <TagCount
-                  count={jobsData.filter((j) => !j.is_published).length}
-                />
+                <TagCount count={jobsData.filter((j) => j.is_draft).length} />
               </>
             ),
           },

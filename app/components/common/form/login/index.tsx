@@ -1,12 +1,16 @@
-import { UserFormModel } from "@/app/models/user";
 import { primaryColor } from "@/app/utils/color";
 import { Button, Form, Input } from "antd";
+
+export type LoginFormValues = {
+  email: string;
+  password: string;
+};
 
 export default function FormLogin({
   onFinish,
   loading,
 }: {
-  onFinish: (values: UserFormModel) => Promise<void>;
+  onFinish: (values: LoginFormValues) => Promise<void>;
   loading?: boolean;
 }) {
   return (

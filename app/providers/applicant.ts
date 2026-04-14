@@ -62,6 +62,19 @@ export const CREATE_APPLICANT = async (
     });
   }
 
+  const user = await db.user.findUnique({
+    where: { id: user_id },
+    select: { id: true },
+  });
+  if (!user) {
+    throw new GeneralError({
+      code: 404,
+      details: "User tidak ditemukan.",
+      error: "Not Found",
+      error_code: "USER_NOT_FOUND",
+    });
+  }
+
   // Opsional: cegah double-apply
   const existing = await db.applicant.findFirst({
     where: { user_id, job_id },
