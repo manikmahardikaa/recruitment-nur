@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  app:
+  next_app:
     build: .
     ports:
       - "3000:3000"
@@ -9,7 +9,7 @@ services:
       - .env
     restart: unless-stopped
 
-  db:
+  mysql_db:
     image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
     environment:
