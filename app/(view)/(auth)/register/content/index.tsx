@@ -35,7 +35,7 @@ export default function RegisterContent() {
 
       if (!response.ok || !data?.success) {
         throw new Error(
-          data?.message ?? "Something went wrong while saving your data."
+          data?.message ?? "Something went wrong while saving your data.",
         );
       }
 
@@ -48,9 +48,7 @@ export default function RegisterContent() {
       notification.error({
         message: "Registration failed",
         description:
-          error instanceof Error
-            ? error.message
-            : "Please try again shortly.",
+          error instanceof Error ? error.message : "Please try again shortly.",
       });
     } finally {
       setLoading(false);
@@ -71,14 +69,16 @@ export default function RegisterContent() {
       <div className={styles.content}>
         <div className={styles.grid}>
           <div className={styles.leftPane}>
-            <span className={styles.badge}>Start your journey with OSS</span>
+            <span className={styles.badge}>
+              Start your journey with Nur Cahaya Tunggal
+            </span>
             <h1 className={styles.title}>
               Join and experience a <span>more personal</span> recruitment flow
             </h1>
             <p className={styles.subtitle}>
               Manage documents, keep your candidate profile polished, and
-              receive real-time updates for every hiring milestone in one
-              modern workspace.
+              receive real-time updates for every hiring milestone in one modern
+              workspace.
             </p>
 
             <ul className={styles.highlights}>
@@ -116,7 +116,9 @@ export default function RegisterContent() {
           <div>
             <div className={styles.formCard}>
               <div className={styles.formHeader}>
-                <p className={styles.formHeaderTitle}>Create Candidate Account</p>
+                <p className={styles.formHeaderTitle}>
+                  Create Candidate Account
+                </p>
                 <p className={styles.formHeaderSubtitle}>
                   Tell us a few details so we can match you with the right
                   opportunity faster.

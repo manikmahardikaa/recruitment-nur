@@ -67,7 +67,7 @@ export default function ForgotPasswordContent() {
           <div className={styles.leftPane}>
             <span className={styles.badge}>Nur Cahaya Tunggal Recruitment Platform</span>
             <h1 className={styles.title}>
-              Recover access to your <span>OSS</span> candidate account
+              Recover access to your <span>Nur Cahaya Tunggal</span> candidate account
             </h1>
             <p className={styles.subtitle}>
               Enter the email you used to register, and we will send a secure
@@ -96,7 +96,7 @@ export default function ForgotPasswordContent() {
               </div>
               <div className={styles.infoCardText}>
                 <span className={styles.infoTitle}>
-                  Centralized OSS recruitment portal
+                  Centralized Nur Cahaya Tunggal recruitment portal
                 </span>
                 <span className={styles.infoSubtitle}>
                   Secure account recovery via email
