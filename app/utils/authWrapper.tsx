@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "./useAuth";
 
 export default function AuthWrapper({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { data: session, status } = useSession();
+  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -18,12 +18,12 @@ export default function AuthWrapper({
   });
 
   useEffect(() => {
-    if (status === "loading") return;
+    if (loading) return;
 
-    if (shouldProtect && !session) {
+    if (shouldProtect && !isAuthenticated) {
       router.push("/login");
     }
-  }, [session, status, router, shouldProtect]);
+  }, [isAuthenticated, loading, router, shouldProtect]);
 
   return <>{children}</>;
 }

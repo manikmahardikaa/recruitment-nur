@@ -1,40 +1,31 @@
-// middleware.ts
-import { withAuth } from "next-auth/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { verifyAuthTokenEdge } from "./auth-token-edge";
 
-/**
- * JANGAN pakai import { Role } from "@prisma/client" di middleware.
- * Pakai string union biasa supaya aman di Edge Runtime.
- */
 type Role = "ADMIN" | "SUPER_ADMIN" | "CANDIDATE";
 
-// Halaman publik (kalau nanti pakai matcher global / route lain)
 const PUBLIC_PATHS = [
   "/login",
   "/register",
   "/forgot-password",
   "/reset-password",
   "/api/register",
+  "/api/auth/login",
+  "/api/auth/logout",
+  "/api/auth/session",
   "/api/auth/forgot-password",
   "/api/auth/reset-password",
   "/api/public",
   "/",
 ];
 
-// Mapping prefix route → role yang boleh akses
 const roleAccessMap: Record<string, Role[]> = {
-  // HANYA SUPER_ADMIN boleh akses user-management
   "/admin/dashboard/user-management": ["SUPER_ADMIN"],
   "/admin/dashboard/template": ["SUPER_ADMIN"],
   "/admin/dashboard/evaluation": ["SUPER_ADMIN"],
   "/admin/dashboard/assignment-setting": ["SUPER_ADMIN"],
   "/admin/dashboard/procedure-document": ["SUPER_ADMIN"],
-
-  // Halaman lain di bawah /admin boleh ADMIN & SUPER_ADMIN
   "/admin": ["ADMIN", "SUPER_ADMIN"],
-
-  // contoh lain: semua route /user hanya untuk CANDIDATE
   "/user": ["CANDIDATE"],
 };
 
@@ -45,17 +36,13 @@ function isPublicPath(pathname: string) {
   }
   if (pathname.startsWith("/apply/ref/")) return true;
   if (pathname.startsWith("/ref/")) return true;
-  
+
   return PUBLIC_PATHS.some((p) => {
     if (p === "/") return pathname === "/";
     return pathname === p || pathname.startsWith(`${p}/`);
   });
 }
 
-/**
- * Helper biar rule yang PALING SPESIFIK (prefix terpanjang) yang kepakai.
- * Jadi "/admin/dashboard/user-management" bakal menang dibanding "/admin".
- */
 function getMatchedRule(pathname: string): [string, Role[]] | undefined {
   let bestMatch: [string, Role[]] | undefined;
 
@@ -71,49 +58,34 @@ function getMatchedRule(pathname: string): [string, Role[]] | undefined {
   return bestMatch;
 }
 
-export default withAuth(
-  function middleware(req: NextRequest) {
-    const { pathname } = req.nextUrl;
+export default async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
-    // @ts-expect-error - next-auth inject token ke req
-    const token = req.nextauth.token as { role?: Role } | null;
-
-    const isPublic = isPublicPath(pathname);
-    if (isPublic) {
-      return NextResponse.next();
-    }
-
-    const matchedRule = getMatchedRule(pathname);
-
-    // Kalau ada aturan role & user sudah login tapi role tidak cocok → tendang ke /403
-    if (matchedRule && token?.role) {
-      const [, allowedRoles] = matchedRule;
-
-      if (!allowedRoles.includes(token.role)) {
-        return NextResponse.redirect(new URL("/403", req.url));
-      }
-    }
-
+  if (isPublicPath(pathname)) {
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      /**
-       * Di sini cuma cek "perlu login atau tidak".
-       * Kalau `authorized` return false → NextAuth redirect ke pages.signIn ("/login").
-       */
-      authorized: ({ req, token }) => {
-        const { pathname } = req.nextUrl;
-
-        // route publik boleh diakses tanpa login
-        if (isPublicPath(pathname)) return true;
-
-        // sisanya: asalkan ada token (sudah login)
-        return !!token;
-      },
-    },
   }
-);
 
-// Route yang dilewatin middleware
-// config ada di root middleware.ts agar matcher terbaca oleh Next.js
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  const token = req.cookies.get("auth_token")?.value;
+  const session = await verifyAuthTokenEdge(token, secret);
+
+  if (!session) {
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  const matchedRule = getMatchedRule(pathname);
+  if (matchedRule) {
+    const [, allowedRoles] = matchedRule;
+    if (!allowedRoles.includes(session.role)) {
+      return NextResponse.redirect(new URL("/403", req.url));
+    }
+  }
+
+  return NextResponse.next();
+}

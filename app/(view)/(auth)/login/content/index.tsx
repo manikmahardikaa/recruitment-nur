@@ -4,8 +4,6 @@ import FormLogin, { LoginFormValues } from "@/app/components/common/form/login";
 import { notification } from "antd";
 import Image from "next/image";
 import Link from "next/link";
-import type { Session } from "next-auth";
-import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -31,23 +29,29 @@ export default function LoginContent() {
           ? rawCallbackUrl
           : null;
 
-      const res = await signIn("credentials", {
-        redirect: false,
-        email: values.email,
-        password: values.password,
-        callbackUrl: safeCallbackUrl ?? undefined,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
       });
+      const result = (await response.json()) as {
+        success: boolean;
+        message?: string;
+        user?: { role?: "SUPER_ADMIN" | "ADMIN" | "CANDIDATE" };
+      };
 
-      if (!res?.ok) {
+      if (!response.ok || !result.success) {
         notification.error({
           message: "Sign in failed",
-          description: res?.error ?? "Invalid email or password.",
+          description: result?.message ?? "Invalid email or password.",
         });
         return;
       }
 
-      const session = (await getSession()) as Session | null;
-      const role = session?.user?.role;
+      const role = result?.user?.role;
 
       notification.success({ message: "Signed in successfully" });
       if (safeCallbackUrl) {

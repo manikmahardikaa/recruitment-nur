@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import {
   Button,
   Card,
@@ -33,6 +32,7 @@ import {
 import { useMobile } from "@/app/hooks/use-mobile";
 import { sanitizeHtml } from "@/app/utils/sanitize-html";
 import { toCapitalized } from "@/app/utils/capitalized";
+import { useAuth } from "@/app/utils/useAuth";
 // import PreviewComponent from "../../../home/profile/content/PreviewComponent";
 import formatSalary from "@/app/utils/format-salary";
 
@@ -89,7 +89,7 @@ function SectionHeader({
 export default function ApplyJobContent() {
   const { id } = useParams() as { id?: string };
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { user_id, loading: authLoading } = useAuth();
   const { data, fetchLoading: isJobLoading } = useJob({ id: id ?? "" });
   const isMobile = useMobile();
   const jobData = data;
@@ -98,13 +98,13 @@ export default function ApplyJobContent() {
   const { onCreate: createApplicant, onCreateLoading: isApplying } =
     useCandidates({ disableNotification: true });
   const { data: myApplicants = [] } = useCandidateByUserId({
-    id: session?.user?.id,
+    id: user_id,
   });
 
   const isAlreadyApplied = useMemo(() => {
-    if (!session?.user?.id || !jobId) return false;
+    if (!user_id || !jobId) return false;
     return myApplicants.some((app) => app.job_id === jobId);
-  }, [jobId, myApplicants, session?.user?.id]);
+  }, [jobId, myApplicants, user_id]);
 
   const overviewHTML = useMemo(
     () => sanitizeHtml(jobData?.description ?? ""),
@@ -112,8 +112,8 @@ export default function ApplyJobContent() {
   );
 
   const submitApplication = async () => {
-    if (status === "loading") return;
-    const userId = session?.user?.id;
+    if (authLoading) return;
+    const userId = user_id;
     if (!userId) {
       const target = id ? `/user/apply-job/${id}` : "/user/apply-job";
       router.push(`/login?callbackUrl=${encodeURIComponent(target)}`);

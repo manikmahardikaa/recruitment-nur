@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { verifyAuthToken } from "@/lib/auth-token";
 import { CHANGE_USER_PASSWORD } from "@/app/providers/user";
 import { GeneralError } from "@/app/utils/general-error";
 
 const MIN_PASSWORD_LENGTH = 8;
 
-export const POST = async (req: Request) => {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
+export const POST = async (req: NextRequest) => {
+  const token = req.cookies.get("auth_token")?.value;
+  const session = verifyAuthToken(token);
+  const userId = session?.id;
 
   if (!userId) {
     return NextResponse.json(
