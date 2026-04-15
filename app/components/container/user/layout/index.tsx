@@ -14,11 +14,11 @@ import type { MenuProps } from "antd";
 import { Content, Footer, Header } from "antd/es/layout/layout";
 import { usePathname, useRouter } from "next/navigation";
 import { LogoutOutlined } from "@ant-design/icons";
+import { signOut } from "next-auth/react";
 import getInitials from "@/app/utils/initials-username";
 import { SidebarMainUser } from "@/app/data/user/main/sidebar-data";
 import { SidebarSettingUser } from "@/app/data/user/setting/sidebar-data";
 import { useMemo } from "react";
-import { logout } from "@/app/utils/logout";
 
 // penting: matikan SSR untuk header
 const MainHeader = dynamic(() => import("../header"), { ssr: false });
@@ -89,11 +89,11 @@ export default function UserLayout({
   const menu = (
     <Menu>
       <Menu.Item
-      key="logout"
-      icon={<LogoutOutlined />}
-      onClick={() => {
-          logout("/login");
-      }}
+        key="logout"
+        icon={<LogoutOutlined />}
+        onClick={() => {
+          signOut({ callbackUrl: "/login" });
+        }}
       >
         Logout
       </Menu.Item>

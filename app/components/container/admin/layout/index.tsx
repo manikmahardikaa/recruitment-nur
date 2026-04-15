@@ -7,7 +7,7 @@ import getInitials from "@/app/utils/initials-username";
 import { SiderAdmin } from "../sider/admin";
 import { useAuth } from "@/app/utils/useAuth";
 import { normalizedRole } from "@/app/utils/normalized";
-import { logout } from "@/app/utils/logout";
+import { signOut } from "next-auth/react";
 
 const { Header, Content, Footer } = Layout;
 
@@ -40,7 +40,7 @@ const menu = (
       key="logout"
       icon={<LogoutOutlined />}
       onClick={() => {
-        logout("/login");
+        signOut({ callbackUrl: "/login" });
       }}
     >
       Logout

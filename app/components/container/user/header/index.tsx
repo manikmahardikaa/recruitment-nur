@@ -19,9 +19,9 @@ import {
   LogoutOutlined,
   DashboardOutlined,
 } from "@ant-design/icons";
+import { signOut } from "next-auth/react";
 import { useAuth } from "@/app/utils/useAuth";
 import getInitials from "@/app/utils/initials-username";
-import { logout } from "@/app/utils/logout";
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
@@ -118,7 +118,7 @@ export default function MainHeader({
         icon: <LogoutOutlined />,
         danger: true,
         label: "Logout",
-        onClick: () => logout("/login"),
+        onClick: () => signOut({ callbackUrl: "/login" }),
       },
     ];
 
